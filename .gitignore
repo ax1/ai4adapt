@@ -1,0 +1,9 @@
+node_modules
+*.pyc
+__pycache__
+*.zip
+*.tar.*
+*.xz
+private
+.venv
+TODOS_PRIVATE.md
