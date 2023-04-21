@@ -5,7 +5,7 @@ Installation: pip install gymnasium[box2d]
 '''
 
 import gymnasium as gym
-
+print(gym.envs.registry.keys())  # print available envs
 env = gym.make("LunarLander-v2", render_mode="human")
 # env = gym.make("LunarLander-v2")
 env.action_space.seed(42)
