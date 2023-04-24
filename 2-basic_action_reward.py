@@ -20,20 +20,20 @@ def execute(observation, reward):
     # Control X
     twist = True if va < -0.20 or va > 0.20 else False
 
-    # if x < -0.15 and y < 0.5:
-    #     action = np.int64(2)
-    # elif x > 0.15 and y < 0.5:
-    #     action = np.int64(2)
+    if x < -0.30 and y < 1 and vy < 0:
+        action = np.int64(3)
+    elif x > 0.30 and y < 1 and vy < 0:
+        action = np.int64(1)
 
     # Control Angle
     # if a < -0.30 or va < -0.30:
     #     action = np.int64(1)
     # elif a > 0.30 or va > 0.30:
     #     action = np.int64(3)
-
-    if a < -0.20:
+    angle = abs(x)/2 if abs(x) > 0.2 else 0.1
+    if a < -angle:
         action = np.int64(1)
-    elif a > 0.20:
+    elif a > angle:
         action = np.int64(3)
 
     # Default
@@ -58,19 +58,21 @@ for _ in range(5000):
     x, y, vx, vy, a, va, L, R = observation
     # for horizontal scrolling turn+up is better than single action
     # if (action == 1 or action == 3) and observation[1] < 0.5:
-    if x < -0.2 and y < 0.5 and vy < 0.5:
-        if a > 0:
+    if x < -0.2 and y < 0.5:
+        if a > -0.05:
             observation, reward, terminated, truncated, info = env.step(
                 np.int64(3))
-        observation, reward, terminated, truncated, info = env.step(
-            np.int64(2))
+        if vy < 0.5:
+            observation, reward, terminated, truncated, info = env.step(
+                np.int64(2))
 
-    elif x > 0.2 and y < 0.5 and vy < 0.5:
-        if a < 0:
+    elif x > 0.2 and y < 0.5:
+        if a < 0.05:
             observation, reward, terminated, truncated, info = env.step(
                 np.int64(1))
-        observation, reward, terminated, truncated, info = env.step(
-            np.int64(2))
+        if vy < 0.5:
+            observation, reward, terminated, truncated, info = env.step(
+                np.int64(2))
 
     if terminated or truncated:
         observation, info = env.reset()
