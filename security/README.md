@@ -1,10 +1,16 @@
 # SecurityEnvironment (custom Gym env)
 
-Enviroment representing a security scenario when a set of security mechanisms must be executed to solve a given attack. Since the environment is created as as gym (Gymnasium) enviroment, we can apply reinforcement learning similar as when solving problems in other scenarios. However, the idea is to have an environment when multiple techniques could be applied, so in the future the env, could provide some extensions to allow using novel RL (or non-RL) techniques.
+Enviroment representing a security scenario when a set of security mechanisms must be executed to solve a given attack. Since the environment is created as a gym (Gymnasium) enviroment, we can apply reinforcement learning similar as when solving problems in other scenarios. However, the idea is to have an environment when multiple techniques could be applied, so in the future the env could provide some extensions to allow using novel RL (or non-RL) techniques.
 
 Note: this folder will be refactored once environment is stable:
 1- Environment will be packaged as gym env (so it can be imported as with any gym env)
 2- Sample code and documentation out of the env
+
+## Installation
+
+```sh
+pip install gymnasium[box2d]
+```
 
 ## How to apply an **well-known** RL strategy
 
