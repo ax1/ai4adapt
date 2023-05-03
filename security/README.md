@@ -12,6 +12,12 @@ Note: this folder will be refactored once environment is stable:
 pip install gymnasium[box2d]
 ```
 
+## Usage
+
+1- Try the lunar folder first, to test the basic env and understand how enviroment and agents share information
+2- Then use the security folder, containing the SecurityEnviroment.py and examples tu use the agent
+3- Then extend the SecurityEnviroment as a proxy to the real enviroments
+
 ## How to apply an **well-known** RL strategy
 
 1- Apply into Lunar example and verify

@@ -155,6 +155,7 @@ class SecurityEnvironment(gym.Env):
         dummy_status = 0 if random() > 0.9 else 1  # simulate distressed most of the time
         return {
             # Note: these parameters are passed later to the agent as a Dictionary (as environment "metrics" )
+            # @Eider check status how can be extracted from the system
             'status': dummy_status,
             'network_data': 'event,pattern',
             'operational_data': 'pattern,threshold...',

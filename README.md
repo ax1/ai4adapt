@@ -2,9 +2,22 @@
 
 RL for security defences optimization
 
-## scripts
+## Installation
 
-- lunar_example and lunar_example_minimal: based on HFace pubic notebook. 'Minimal' contains the simplest runnable code.
-- gym-example.ipynb: for tests on code and real required dependencies
+```sh
+pip install gymnasium[box2d]
+```
+
+## Usage
+
+> See README.md in each folder
+
+- lunar folder: minimal examples on how to use gym environments (no RL).
+- security folder: SecurityEnvironment.py created as gym env. Examples on how to use it.
+
+```sh
+# Execute a plain agent on the security enviroment
+python 1-basic_main.py
+```
 
 Read also https://xusophia.github.io/DataSciFinalProj/
