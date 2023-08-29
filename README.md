@@ -1,6 +1,6 @@
 # AI4ADAPT
 
-RL for security defences optimization
+Reinforment Learning (RL) for security defences optimization.
 
 ## Installation
 
@@ -12,11 +12,11 @@ pip install gymnasium[box2d]
 
 > See README.md in each folder
 
-- lunar folder: minimal examples on how to use gym environments (no RL).
-- security folder: SecurityEnvironment.py created as gym env. Examples on how to use it.
+- Lunar folder: minimal examples on how to use gym environments (no RL).
+- Security folder: SecurityEnvironment.py created as a gym env. Examples on how to use it.
 
 ```sh
-# Execute a plain agent on the security enviroment
+# Execute a plain agent on the security environment
 python 1-basic_main.py
 ```
 
