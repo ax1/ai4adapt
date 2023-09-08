@@ -1,0 +1,6 @@
+[ ] Decide best lib for DRL at this first stage. Since we are putting all the weight on the real environment, most of the RL libs may fit, but discard obsolete ones (som requires downgrade to tensorflow 1 to run som are created for gym and not updated to gymnasium terminate/truncate etc). 
+[ ] Decide Algorithm. PPO for now seems the right choice.
+[ ] Create generic remote call to target where sensing will be retrieved. For now, this app will be inside the machine with caldera, or remote, but check if we can call remotely caldera actions.
+[ ] Start witn status sensing (depending on secondary variables in the "state" we can infer a status value for training, later we will add more state data
+[ ] Split the defense to the defense execute (we've agreed to use the caldera actions for that)
+[ ] reduce time. Uns a script to have all the actions (so we can test defenses are ok). Then, in caldera operations either execute the script with args 8eg: 1 4 8 execute only those in the script) or execute loop actions with an argument on each execution (to prevent create operations for all the steps and also to handle to reduce the time of each episode for training)
