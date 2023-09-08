@@ -3,6 +3,7 @@ from gymnasium import spaces
 from random import random
 import subprocess
 from enum import Enum
+from gymnasium.envs.registration import register
 
 
 class STATUS(Enum):
@@ -34,6 +35,10 @@ class SecurityEnvironment(gym.Env):
           - AND timeout: After several steps (enough time for attacker to blow the system or steal data) the system is considered broken. Very negative big reward.
         - Positive reward:
           - if system status is OK (attack was resolved, solution was found). Moderate big reward.
+
+    Usage:
+     - as normal code: `env = new SecurityEnvironment()`
+     - as registered env: `SecurityEnvironment.register('SecurityEnvironment')` and then `gym.make('SecurityEnvironment)`
     '''
 
     MAX_STEPS = 20  # More than 10 unsuccesful defenses for a single attack is not realistic as defense
@@ -45,6 +50,14 @@ class SecurityEnvironment(gym.Env):
     ██    ██ ██ ██  ██  ██ ██  ██ ██ ██   ██      ██ ██ ██    ██ ██  ██  ██     ██  ██  ██ ██         ██    ██   ██ ██    ██ ██   ██      ██
      ██████  ██ ██      ██ ██   ████ ██   ██ ███████ ██  ██████  ██      ██     ██      ██ ███████    ██    ██   ██  ██████  ██████  ███████
     """
+    @staticmethod
+    def register(id):
+        '''
+        This method is optional, since the env can be created as `env = new SecurityEnvironment()`.
+        The method registers *at runtime* the current env, so it can be invoked from gym.make().
+        '''
+        register(id=id, entry_point='SecurityEnvironment:SecurityEnvironment',
+                 max_episode_steps=500)
 
     def __init__(self):
         # Note: indicators is optional, but set for usage in the future (eg: net, cpu, ram...)
@@ -86,7 +99,7 @@ class SecurityEnvironment(gym.Env):
         info = self._get_info(f'Executing step #{self._steps}')
         self._update_reward(REWARD.TIME)
 
-        # Check abort (out of time, out of cost, etc..) and reaturn early
+        # Check abort (out of time, out of cost, etc..) and return early
         if self._steps > self.MAX_STEPS:
             info = self._get_info(
                 'TIMEOUT: The current set of defenses wer noth enough fast to solve the attack.')
@@ -100,7 +113,7 @@ class SecurityEnvironment(gym.Env):
             self._update_reward(REWARD.DEFENSE)
             self._execute_action(action)
 
-        # After the action, observe the enviroment to see the new state
+        # After the action, observe the environment to see the new state
         observation = self._get_obs()
 
         # If objective is achieved, notify to finish as SUCCESS
