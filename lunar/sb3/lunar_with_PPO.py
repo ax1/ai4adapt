@@ -20,7 +20,7 @@ from stable_baselines3 import PPO
 from stable_baselines3.common.env_util import make_vec_env
 
 ENV_NAME = "LunarLander-v2"
-LEARN_ITERATIONS = 250000
+LEARN_ITERATIONS = 25000
 MODEL_NAME = ENV_NAME+'_'+str(LEARN_ITERATIONS)
 
 # Parallel environments

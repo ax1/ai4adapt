@@ -5,7 +5,7 @@ Note: this is only as sample and genreal documentation installation available po
 See also the available ppo policies in the above documentation link. basically:
 - stable_baselines3.ppo.MlpPolicy (alias of stable_baselines3.common.policies.ActorCriticPolicy)
 - stable_baselines3.ppo.CnnPolicy (alias of stable_baselines3.common.policies.ActorCriticCnnPolicy)
-- stable_baselines3.ppo.MultiInputPolicy (alias of stable_baselines3.common.policies.MultiInputActorCriticPolicy)
+- stable_baselines3.ppo.MultiInputPolicy(alias of stable_baselines3.common.policies.MultiInputActorCriticPolicy)
 
 
 Installation:
@@ -26,7 +26,7 @@ NAME = "CartPole-v1"
 vec_env = make_vec_env(NAME, n_envs=1)
 
 model = PPO("MlpPolicy", vec_env, verbose=1)
-model.learn(total_timesteps=2500)
+model.learn(total_timesteps=25000)
 model.save(NAME)
 
 del model  # remove to demonstrate saving and loading
