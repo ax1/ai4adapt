@@ -11,5 +11,10 @@ def test_use_registered():
     env = gym.make(ENV_NAME)
 
 
+def test_use_normal():
+    env = new SecurityEnvironment()
+
+
+test_use_normal()
 test_register()
 test_use_registered()
