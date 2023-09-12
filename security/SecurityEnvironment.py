@@ -51,7 +51,7 @@ class SecurityEnvironment(gym.Env):
      ██████  ██ ██      ██ ██   ████ ██   ██ ███████ ██  ██████  ██      ██     ██      ██ ███████    ██    ██   ██  ██████  ██████  ███████
     """
     @staticmethod
-    def register(id):
+    def register():
         '''
         This method is optional, since the env can be created as `env = new SecurityEnvironment()`.
         The method registers *at runtime* the current env, so it can be invoked from gym.make().
