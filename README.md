@@ -4,6 +4,8 @@ Reinforcement Learning (RL) for security defences optimization.
 
 ## Installation
 
+> DEV status: check inside example files depending on the wanted lib for more installation instructions.
+
 ```sh
 pip install gymnasium[box2d]
 ```
@@ -35,6 +37,6 @@ Read also https://xusophia.github.io/DataSciFinalProj/
 
 After assessing pros and cons, we have decided to split the project into 2 objectives:
 - The RL training for security: keep it simple, do not try to re-invent the wheel. There are many literature on RL for security. So we separate the training from the environment as much as possible. This is achieved by the SecurityEnvironment module.
-- The environment: Create a Real environment with real initial attack scenario and with real sensing and REAL defenses. Pass the sensing to the training part as gymnasium env and simple/clear observations and rewards. Even if the RL does not create the optimal strategy, having a real system gives more confidence in the training than using a simulator
+- The environment: Create a Real environment with real initial attack scenario and with real sensing and REAL defenses. Pass the sensing to the training part as gymnasium env and simple/clear observations and rewards. Even if the RL does not create the optimal strategy, having a real system gives more confidence in the training than using a simulator.
 
-Additionally: to limit the scope we will train only reactive defenses (not the preventive ones). In the future we can put also preventive defenses to the trained ones so the system will be more robust and not only able to solve the attacks on the fly.
+Additionally: to limit the scope we will train only *reactive* defenses (not the preventive ones). In the future we can put also preventive defenses to the trained ones so the system will be more robust and not only able to solve the attacks on the fly.
