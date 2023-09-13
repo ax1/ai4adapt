@@ -19,7 +19,7 @@ pip install gymnasium[box2d]
 - Bar2D folder: another set of examples, mainly for assessing the DRL libs on a simple env. 
 
 ```sh
-from SecurityEnvironment import *
+from security_environment import SecurityEnvironment
 
 # Create environment
 env = SecurityEnvironment()

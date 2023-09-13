@@ -1,3 +1,4 @@
+import traceback
 import gymnasium as gym
 from gymnasium import spaces
 from random import random
@@ -41,7 +42,7 @@ class SecurityEnvironment(gym.Env):
      - as registered env: `SecurityEnvironment.register('SecurityEnvironment')` and then `gym.make('SecurityEnvironment)`
     '''
 
-    MAX_STEPS = 20  # More than 10 unsuccesful defenses for a single attack is not realistic as defense
+    MAX_STEPS = 50  # More than 10-50 unsuccessful defenses for a single attack is not realistic as real defense
 
     """
      ██████  ██ ███    ███ ███    ██  █████  ███████ ██ ██    ██ ███    ███     ███    ███ ███████ ████████ ██   ██  ██████  ██████  ███████
@@ -53,11 +54,20 @@ class SecurityEnvironment(gym.Env):
     @staticmethod
     def register(id):
         '''
-        This method is optional, since the env can be created as `env = new SecurityEnvironment()`.
+        This method is optional, since the env can be created as `env = SecurityEnvironment()`.
         The method registers *at runtime* the current env, so it can be invoked from gym.make().
+
+        The try/except below is a handy guard to remind how to import for a successful registering
+        (this is better than copying files to gym folder).
         '''
-        register(id=id, entry_point='SecurityEnvironment:SecurityEnvironment',
-                 max_episode_steps=500)
+        entry_point = 'security_environment:SecurityEnvironment'
+        try:
+            register(id=id, entry_point=entry_point,
+                     max_episode_steps=SecurityEnvironment.MAX_STEPS)
+        except:
+            print(f'''SECURITY_ENVIRONMENT: Check if you imported the class properly (eg: from security_environment import *).
+                   The expected path for this registration is \"{entry_point}\" ''')
+            traceback.print_exc()
 
     def __init__(self):
         # Note: indicators is optional, but set for usage in the future (eg: net, cpu, ram...)

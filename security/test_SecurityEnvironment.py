@@ -1,4 +1,4 @@
-from SecurityEnvironment import *
+from security_environment import SecurityEnvironment
 import gymnasium as gym
 ENV_NAME = 'sec_env'
 
@@ -12,7 +12,7 @@ def test_use_registered():
 
 
 def test_use_normal():
-    env = new SecurityEnvironment()
+    env = SecurityEnvironment()
 
 
 test_use_normal()
