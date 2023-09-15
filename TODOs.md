@@ -9,7 +9,6 @@
 - [ ] Reduce time. Unless a script to have all the actions (so we can test defenses are ok). Then, in caldera operations either execute the script with args 8eg: 1 4 8 execute only those in the script) or execute loop actions with an argument on each execution (to prevent create operations for all the steps and also to handle to reduce the time of each episode for training).
 
 # TBD ASAP
-
 - [ ] Test same PPO as lunar but with the sec_env (it should work with minimal changes).
 - [ ] Create a vm or docker with simple attack+defense set and create a external monitor link (probably as docker execute). This should work as generic Sec real event for bare test of the effectiveness of the RL part. THIS KEEPS SEPARATION BETWEEN THE RL EFFECTIVENESS AND THE REAL ENVIRONMENT COMPLEXITY (with a simpler but real env we can avoid the trap of adding much custom real environment and tools instead of focusing on the real training effectiveness).
 - [ ] Check caldera how to access data internally externally. Talking with OscarL we agree that we can simplify the operations as an sh script having the defenses procedures (installation+execution individually) and call it with params, so for defense [1, 4, 7] the operations in the caldera could be the same action but with different start parameters (quite easy to maintain, and once learned optimal solution we can set up the caldera workflow manually to take advantage of the visualization).
