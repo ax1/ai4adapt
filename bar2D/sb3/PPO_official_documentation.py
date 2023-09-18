@@ -25,7 +25,7 @@ NAME = "CartPole-v1"
 vec_env = make_vec_env(NAME, n_envs=1)
 
 model = PPO("MlpPolicy", vec_env, verbose=1)
-model.learn(total_timesteps=2500)
+model.learn(total_timesteps=25000)
 model.save(NAME)
 
 del model  # remove to demonstrate saving and loading
