@@ -6,13 +6,13 @@ from security_environment import *
 
 ENV_NAME = "SecurityEnvironment"
 LEARN_ITERATIONS = 1000
-MODEL_NAME = ENV_NAME+'_'+str(LEARN_ITERATIONS)
+MODEL_NAME = ENV_NAME+'_PPO_'+str(LEARN_ITERATIONS)
 
 SecurityEnvironment.register(ENV_NAME)
 
 vec_env = make_vec_env(ENV_NAME, n_envs=1)
 
-model = PPO("MlpPolicy", vec_env, verbose=1)
+model = PPO("MlpPolicy", vec_env, verbose=1)  # MlpPolicy MultiInputPolicy
 model.learn(total_timesteps=LEARN_ITERATIONS)
 model.save(MODEL_NAME)
 

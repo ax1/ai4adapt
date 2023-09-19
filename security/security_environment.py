@@ -5,6 +5,7 @@ from random import random
 import subprocess
 from enum import Enum
 from gymnasium.envs.registration import register
+import numpy as np
 
 
 class STATUS(Enum):
@@ -24,10 +25,9 @@ class SecurityEnvironment(gym.Env):
     '''
     Create a Gym environment and follow their rules (when possible) for external interaction.
 
-    For observations, in this first stage, the status of the system is the only parameter(0-ok, 1-distressed)
+    Observation: array (Box1D) of numbers (See doc for match to real sensing).
 
-    For actions, the space is a discrete set of numbers, and not an action object,
-        the object is dealt internally only. For external users, actions are only a list of numbers.
+    Action: array (Discrete) from 0-n (See doc for match to real defense name).
 
     For rewards:
         - Negative reward:
@@ -43,7 +43,6 @@ class SecurityEnvironment(gym.Env):
     '''
 
     MAX_STEPS = 50  # More than 10-50 unsuccessful defenses for a single attack is not realistic as real defense
-
     """
      ██████  ██ ███    ███ ███    ██  █████  ███████ ██ ██    ██ ███    ███     ███    ███ ███████ ████████ ██   ██  ██████  ██████  ███████
     ██       ██ ████  ████ ████   ██ ██   ██ ██      ██ ██    ██ ████  ████     ████  ████ ██         ██    ██   ██ ██    ██ ██   ██ ██
@@ -54,7 +53,8 @@ class SecurityEnvironment(gym.Env):
     @staticmethod
     def register(id):
         '''
-        This method is optional, since the env can be created as `env = SecurityEnvironment()`.
+        This method is OPTIONAL, since the env can be created as `env = SecurityEnvironment()`.
+        Other RL libraries accept either a String or the ClassName as input so register is not really mandatory.
         The method registers *at runtime* the current env, so it can be invoked from gym.make().
 
         The try/except below is a handy guard to remind how to import for a successful registering
@@ -65,17 +65,14 @@ class SecurityEnvironment(gym.Env):
             register(id=id, entry_point=entry_point,
                      max_episode_steps=SecurityEnvironment.MAX_STEPS)
         except:
-            print(f'''SECURITY_ENVIRONMENT: Check if you imported the class properly (eg: from security_environment import *).
+            print(f'''ENVIRONMENT CLASS: Check if you imported the class properly (eg: from security_environment import *).
                    The expected path for this registration is \"{entry_point}\" ''')
             traceback.print_exc()
 
     def __init__(self):
         # Note: indicators is optional, but set for usage in the future (eg: net, cpu, ram...)
         # @Eider: check wich indicators based on attack, for now status if enough
-        self.observation_space = spaces.Dict({
-            'status': spaces.Discrete(1),
-            'indicators': spaces.Discrete(4)
-        })
+        self.observation_space = spaces.Discrete(5)
         self._actions = self._load_actions()
         # Action number for external users (1,2,3...)
         self.action_space = spaces.Discrete(len(self._actions))
@@ -84,19 +81,18 @@ class SecurityEnvironment(gym.Env):
         self._steps = 0
 
     def _get_obs(self):
-        status = self._get_system_observation()['status']
-        return {'status': status, 'metrics': [random(), random(), random(), random()]}
+        # status = self._get_system_observation()[0]
+        return self._get_system_observation()
+        # return {'status': status, 'metrics': [random(), random(), random(), random()]}
 
     def _get_info(self, msg):
-        return {f'info: {msg}'}
+        return {'info': msg}
 
     def reset(self, seed=None, options=None):
         self._reward = 0
         self._steps = 0
         self._initialize_damaged_environment()
-        # This initialize numpy.random (as other envs do, not required by us)
-        super().reset(seed=seed)
-        observation = self._get_obs()
+        observation = self._get_system_observation()
         info = self._get_info('System restarting')
         return observation, info
 
@@ -127,7 +123,8 @@ class SecurityEnvironment(gym.Env):
         observation = self._get_obs()
 
         # If objective is achieved, notify to finish as SUCCESS
-        if observation['status'] == STATUS.GREEN.value:
+        status = observation[0]
+        if status == STATUS.GREEN.value:
             info = self._get_info('SUCCESS: status OK')
             self._update_reward(REWARD.SUCCESS)
             terminated = True
@@ -136,7 +133,8 @@ class SecurityEnvironment(gym.Env):
         return observation, self._reward, terminated, truncated, info
 
     def render(self):
-        return None
+        return np.ones(self.observation_shape) * 1
+        # return None
 
     def close(self):
         return None
@@ -173,10 +171,14 @@ class SecurityEnvironment(gym.Env):
 
     def _get_system_observation(self):
         '''
-        Either run on the real environment infrastructure or request I/O externally
+        Either run on the real environment infrastructure or request I/O externally.
+        ARF 15/09/23: translate dict into an array (another option is to use MultiInputSpace policy instead of MLPPolicy later).
+        This is NOT mandatory but useful later in the DRL algorithm (usually requires a value or array of values)
+        Note that for the env itself, it is better to use the dict (so visually direct match to system parameters), but we want env to be gym_like
+        because we want to demonstrate that we can learn the same way a standard gym env (lunar, etc) and then with the same code, the custom env.
         '''
         dummy_status = 0 if random() > 0.9 else 1  # simulate distressed most of the time
-        return {
+        observation = {
             # Note: these parameters are passed later to the agent as a Dictionary (as environment "metrics" )
             # @Eider check status how can be extracted from the system
             'status': dummy_status,
@@ -186,6 +188,12 @@ class SecurityEnvironment(gym.Env):
             # @Eider: timestamp will be useful later to fine-tune time cost instead of step=time
             'timestamp': 1682515800959
         }
+        # TODO in the future the DICT is a Dict<SPACES>, not a Dict(any) See https://gymnasium.farama.org/api/spaces/composite/
+        # return gym.spaces.Dict(observation)  # only for MultiInputPolicy
+        # return gym.spaces.MultiDiscrete([dummy_status, 1, 2, 3, 4])
+        return np.array([3]) @ @@TODO esto funciona mirar arriba como he definido el discrete(que significa 1 valor de shape y que como maximo puede valer de 0 a 4) ver discrete aqui https: // gymnasium.farama.org/api/spaces/fundamental / y tambien ver el ejemplo de luarn que usa un box en el obervation y un discrete en el action en lunar y en cartpole lo mismo a mod de ejemplo https: // github.com/openai/gym/blob/master/gym/envs/box2d/lunar_lander.py https: // github.com/openai/gym/blob/master/gym/envs/classic_control/cartpole.py
+        # return gym.spaces.Discrete(1, 1)
+        # return observation.values()  # list(observation.values())
 
     def _update_reward(self, reward_type):
         self._reward = self._reward + reward_type.value

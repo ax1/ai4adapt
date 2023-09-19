@@ -12,20 +12,18 @@ from random import choice
 # Gym env 8in the future we will load it as other envs)
 env = SecurityEnvironment()
 actions = [0, 1, 2]  # available actions right now
+observation, info = env.reset()
 while (True):
     # for r in range(100):
     # sleep(1)
     # Try different actions and see result
     action = choice(actions)
     observation, reward, terminated, truncated, info = env.step(action)
-    print(f'Status: {observation["status"]}')
+    print(f'Status: {observation[0]}')
     print(f'observation: {observation}')
     print(f'Reward: {reward}')
     if terminated or truncated:
         print(info)
         break
         env.reset()
-    env.close()
-'''
-this is an errror test
-'''
+env.close()
