@@ -1,6 +1,7 @@
 # TODOs
 
 - [ ] Decide best lib for DRL at this first stage. Since we are putting all the weight on the real environment, most of the RL libs may fit, but discard obsolete ones (som requires downgrade to tensorflow 1 to run som are created for gym and not updated to gymnasium terminate/truncate etc). 
+- Check best policies from available. Note that SP3 remove some ones available in obsolete SB (https://stable-baselines3.readthedocs.io/en/master/guide/migration.html#breaking-changes). MlpPlocy CNNPolicy and MultiInput Policy where observation is `Space`  type (array) for MLP and `Dict` type for multiInput.
 - [ ] If SB3 selected check why sb3.make_vec_env returns the old gym format (done field) instead of the new one (terminated, truncated fields). By looking at the source code https://stable-baselines3.readthedocs.io/en/master/_modules/stable_baselines3/common/env_util.html term, truncated should appear if the env we use implements it.
 - [ ] Decide Algorithm. PPO for now seems the right choice.
 - [ ] Create generic remote call to target where sensing will be retrieved. For now, this app will be inside the machine with caldera, or remote, but check if we can call remotely caldera actions.
