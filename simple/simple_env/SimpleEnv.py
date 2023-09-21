@@ -7,9 +7,12 @@ from gymnasium.envs.registration import register
 
 class SimpleEnv(gym.Env):
     """
+     <-- success       fail -->
+    |--------------------------|
+
     Simple environment for testing purposes.
     Instead of the slider, this is a directional problem.
-    Left to bound is success, right bound is fail
+    Left to bound is success, right bound is fail.
     Note that penalty for step has been disabled because when using
     PPO algorithm later, the learning steps are very high when the 
     step penalty is -10 (even if low compared to success).
@@ -35,8 +38,9 @@ class SimpleEnv(gym.Env):
         self.observation_space = spaces.Box(
             low=0, high=self.UPPER_BOUND, shape=(1,), dtype=np.int32)
         # 0=-1 1=+1
-        # LOOKOUT: As defined in documentation SB3  Discrete is not Integer,
-        #  but NATURAL numbers {0,N} So start=-1 is not possible even if not runtime error.
+        # LOOKOUT: As defined in documentation SB3  Discrete is Integer and start can be negative
+        # https://gymnasium.farama.org/api/spaces/fundamental/#gymnasium.spaces.Discrete
+        # But later in the DRL predict() method returns actions out of the space (the learn with 0..n)
         self.action_space = spaces.Discrete(2)
         self._reward = 0
         self._steps = 0

@@ -4,15 +4,12 @@ from time import sleep
 from random import choice
 
 env = SimpleEnv()
-actions = [-1, 0, 1]
 observation, info = env.reset()
 while (True):
-    action = choice(actions)
+    action = env.action_space.sample()
     observation, reward, terminated, truncated, info = env.step(action)
-    print(f'observation: {observation}')
-    print(f'Reward: {reward}')
+    print(f'action {action} Reward: {reward} next_observation {observation}')
     if terminated or truncated:
         print(info)
-        # break
         env.reset()
 env.close()
