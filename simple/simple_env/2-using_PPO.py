@@ -1,8 +1,9 @@
 from SimpleEnv import SimpleEnv
 from stable_baselines3 import PPO
 
+# model = PPO("MlpPolicy", SimpleEnv(), verbose=1, learning_rate=0.5)
 model = PPO("MlpPolicy", SimpleEnv(), verbose=1)
-model.learn(total_timesteps=10000, progress_bar=True)
+model.learn(total_timesteps=100, progress_bar=True)
 vec_env = model.get_env()
 observations = vec_env.reset()
 for r in range(1000):
@@ -14,7 +15,7 @@ for r in range(1000):
     # print(f'observation: {observation}')
     # print(f'Reward: {reward}')
     if dones:
-        print(actions)
-        print(f'Rewards: {rewards}')
+        # print(actions)
+        # print(f'Rewards: {rewards}')
         print(info)
         vec_env.reset()

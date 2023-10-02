@@ -29,7 +29,7 @@ class SimpleEnv(gym.Env):
     LOWER_BOUND = 0
     UPPER_BOUND = 9  # 10 steps
     TARGET = 3
-    MAX_STEPS = 30
+    MAX_STEPS = 100
 
     def __init__(self):
         # max number [0,9]
@@ -39,6 +39,7 @@ class SimpleEnv(gym.Env):
         # LOOKOUT: As defined in documentation SB3  Discrete is not Integer,
         #  but NATURAL numbers {0,N} So start=-1 is not possible even if not runtime error.
         self.action_space = spaces.Discrete(3)
+
         self._reward = 0
         self._steps = 0
 
@@ -50,6 +51,7 @@ class SimpleEnv(gym.Env):
         self._reward = 0
         self._steps = 0
         self._observation = self.observation_space.sample()
+        # self._observation = np.array([0]).astype(np.int32)
         info = self._get_info(f'System restarting. TARGET is {self.TARGET}')
         return self._observation, info
 
@@ -69,7 +71,7 @@ class SimpleEnv(gym.Env):
         old_observation = self._observation[0]
         val = self._observation[0]+slide
         self._observation[0] = val
-        # self._reward += (-1)
+        self._reward += (-1)
         c = self._observation[0]
         t = self.TARGET
         info = self._get_info(f'Step count {self._steps}')
