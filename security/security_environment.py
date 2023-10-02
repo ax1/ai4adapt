@@ -70,6 +70,7 @@ class SecurityEnvironment(gym.Env):
             traceback.print_exc()
 
     def __init__(self):
+        super().__init__()
         # Note: indicators is optional, but set for usage in the future (eg: net, cpu, ram...)
         # @Eider: check wich indicators based on attack, for now status if enough
         self.observation_space = spaces.Discrete(5)
@@ -89,6 +90,7 @@ class SecurityEnvironment(gym.Env):
         return {'info': msg}
 
     def reset(self, seed=None, options=None):
+        super().reset(seed=seed, options=options)
         self._reward = 0
         self._steps = 0
         self._initialize_damaged_environment()
