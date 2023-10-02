@@ -17,7 +17,7 @@ from stable_baselines3 import DQN
 from stable_baselines3.common.evaluation import evaluate_policy
 
 ENV_NAME = "LunarLander-v2"
-LEARN_ITERATIONS = 2500000
+LEARN_ITERATIONS = 25_000
 MODEL_NAME = ENV_NAME+'_DQN_'+str(LEARN_ITERATIONS)
 # Create environment
 env = gym.make(ENV_NAME, render_mode="rgb_array")
