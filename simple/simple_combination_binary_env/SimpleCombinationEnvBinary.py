@@ -9,12 +9,19 @@ class SimpleEnv(gym.Env):
     Find a subset of switches to reach the solution.
     Real usage can be find nodes to a path, etc, get the right combination, etc.
 
+
     Example: -v-v-----v--  -> OK
+
+    Tests:
+    - adding more observation space compared to SimpleConbinationEnv gives much less treining time
+    - 1000 learn iterations when cpu=perf is success, however when cpu=quiet truncate
+    - increasing the max-steps helps A LOT on solving the algorithm (changed steps 100 to 1000)
     '''
 
     ACTIONS = 10
+    OBSERVATIONS = 10
     SOLUTION = [3, 7, 1]
-    MAX_STEPS = 100
+    MAX_STEPS = 1000
     REWARD_ACTION = 1
     PENALTY_STEP = -1
     REWARD_expected = 10
@@ -22,9 +29,10 @@ class SimpleEnv(gym.Env):
 
     def __init__(self):
         super().__init__()
-        # Observation is the current success status
-        self.observation_space = spaces.Box(
-            low=0, high=1, shape=(self.ACTIONS,), dtype=bool)
+        # Observation is our case is the sensing for each action,
+        # but it can be whatever sensing
+        self.observation_space = spaces.Box(low=0, high=1,
+                                            shape=(self.OBSERVATIONS,), dtype=bool)
         self.action_space = spaces.Discrete(self.ACTIONS)
         self._reward = 0
         self._steps = 0
