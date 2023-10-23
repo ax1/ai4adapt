@@ -6,14 +6,16 @@ However this partial results and therefore truncate with same train iterations a
 Tested when SimpleEnvMaxSteps=1000 and learn_timesteps=1000
 '''
 
-from SimpleCombinationEnvBinary import SimpleEnv
+from SimpleCombinationBinaryEnv import SimpleEnv
 from stable_baselines3 import PPO
 
 model = PPO("MlpPolicy", SimpleEnv(), verbose=1)
-model.learn(total_timesteps=100, progress_bar=True)
+# model.n_steps = 128 # batch_size=64
+model.learn(total_timesteps=1_00, progress_bar=True)
+
 vec_env = model.get_env()
 observations = vec_env.reset()
-for r in range(100):
+for r in range(1000):
     '''
     Deterministic=true gives better results given same training steps.
     '''
