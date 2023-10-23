@@ -1,6 +1,6 @@
 # SimpleCombinationEnvBinary [TODOs]
 
-This version changes the original observation_space (1 Dimension float) into a bigger one with more restrictions (N dimensios but binary on each dimension).
+This version changes the original observation_space (1 Dimension float) into a bigger one with more restrictions (N dimensions but binary on each dimension).
 
 Check **WHY** this occurs:
 - [ ] a) adding more dimensions let **the policy** for finding better hills and valleys (think 3D gradient mountain analogy)

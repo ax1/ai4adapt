@@ -51,11 +51,8 @@ class SimpleEnv(gym.Env):
         self._observation = initial
         info = self._get_info(f'System restarting')
         return self._observation, info
-    count = 0
 
     def step(self, action):
-        self.count = self.count+1
-        print(self.count)
         terminated = False
         truncated = False
         self._steps += 1
