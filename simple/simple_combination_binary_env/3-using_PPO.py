@@ -13,7 +13,7 @@ from stable_baselines3 import PPO
 # lookout: PPO default block steps aways forced to 2048 blocks, override with n_steps
 # model = PPO("MlpPolicy", SimpleEnv(), verbose=1, learning_rate=0.1, gamma=0.01)
 model = PPO("MlpPolicy", SimpleEnv(), verbose=1, n_steps=128)
-model.learn(total_timesteps=1_000, progress_bar=True)
+model.learn(total_timesteps=200, progress_bar=True)
 print(f'>>> Total steps so far: {model.num_timesteps}')
 
 vec_env = model.get_env()

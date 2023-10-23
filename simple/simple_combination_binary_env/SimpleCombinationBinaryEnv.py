@@ -21,7 +21,7 @@ class SimpleEnv(gym.Env):
     ACTIONS = 10
     OBSERVATIONS = 10
     SOLUTION = [3, 7, 1]
-    MAX_STEPS = 100
+    MAX_STEPS = 10
     REWARD_ACTION = 1
     PENALTY_STEP = -1
     REWARD_expected = 10
