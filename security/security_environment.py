@@ -14,11 +14,12 @@ class STATUS(Enum):
 
 
 class REWARD(Enum):
-    # @Eider: Real values for security issues should be bigger than these ones (breach) depending on the attack
-    TIME = -2
-    DEFENSE = -1
-    TIMEOUT = -10000
-    SUCCESS = 100
+    # @Eider: Real values for security to solve with minimal steps 
+    SUCCESS = 100 # Attack is considered finish without catastrophic damage
+    TIMEOUT=SUCCESS # After a while, if the system is still UP, end with success
+    FAILURE=-100 # The attack destroys succesfully the system
+    TRUNCATE=FAILURE # When the system is fully DOWN, end episode with penalty
+
 
 
 class SecurityEnvironment(gym.Env):
@@ -29,13 +30,16 @@ class SecurityEnvironment(gym.Env):
 
     Action: array (Discrete) from 0-n (See doc for match to real defense name).
 
-    For rewards:
+    For rewards (See REWARD enum for updates):
+    @@@@@@@TODO Angel review this after the new changes in rewards strategy
         - Negative reward:
           - each defense executed. Amortization/cost of installed solutions,resources like electricity space, cloud resources , etc).
           - AND each step() (time passed) that the system is vulnerable. In other envs this is the time/gas/cost consumed.
           - AND timeout: After several steps (enough time for attacker to blow the system or steal data) the system is considered broken. Very negative big reward.
         - Positive reward:
-          - if system status is OK (attack was resolved, solution was found). Moderate big reward.
+          
+          - if system status is OK (attack
+ was resolved, solution was found). Moderate big reward.
 
     Usage:
      - as normal code: `env = new SecurityEnvironment()`
@@ -99,6 +103,10 @@ class SecurityEnvironment(gym.Env):
         return observation, info
 
     def step(self, action):
+
+        @@@@@@@@@TODO ANGEL FORCE (and document) WHEN ACTION=0, do not perform penalty
+        @@@@@@@@@TODO ANGEL review step with the new reward structure (now timeout is success and other changes)
+        @@@@@@@@@TODO ANGEL reduce the timeout steps to perform better convergence
         terminated = False
         truncated = False
 
@@ -109,8 +117,7 @@ class SecurityEnvironment(gym.Env):
 
         # Check abort (out of time, out of cost, etc..) and return early
         if self._steps > self.MAX_STEPS:
-            info = self._get_info(
-                'TIMEOUT: The current set of defenses wer noth enough fast to solve the attack.')
+            info = self._get_info('TIMEOUT: The current set of defenses were not enough fast to solve the attack.')
             self._update_reward(REWARD.TIMEOUT)
             truncated = True
             observation = self._get_obs()
@@ -151,14 +158,12 @@ class SecurityEnvironment(gym.Env):
 
     def _load_actions(self):
         # @Eider: we must run a search response items or list them somehow.
-        print('Loading actions: TODO, in the future, this list should be a call to the available actions (Responses)')
-        actions = {}
-        actions[0] = {'id': 0, 'name': 'NO ACTION',
-                      'command': 'echo DEFENSE: NO ACTION'}
-        actions[1] = {'id': 10023, 'name': 'firewall',
-                      'command': 'echo DEFENSE: start firewall'}
-        actions[2] = {'id': 40001, 'name': 'restart',
-                      'command': 'echo DEFENSE: stopping the machine'}
+        print('Loading actions: TODO, in the future, this list should be a call to the available actions (Responses). NOTE: IDs as string to deal later with different nomenclatures for defense identifiers')
+        actions = (
+            {'id': '0', 'name': 'NO ACTION','command': 'echo DEFENSE: NO ACTION'},
+            {'id': '10023', 'name': 'firewall','command': 'echo DEFENSE: start firewall'},
+            {'id': '40001', 'name': 'restart','command': 'echo DEFENSE: stopping the machine'}
+        )
         return actions
 
     def _execute_action(self, num):
@@ -193,7 +198,7 @@ class SecurityEnvironment(gym.Env):
         # TODO in the future the DICT is a Dict<SPACES>, not a Dict(any) See https://gymnasium.farama.org/api/spaces/composite/
         # return gym.spaces.Dict(observation)  # only for MultiInputPolicy
         # return gym.spaces.MultiDiscrete([dummy_status, 1, 2, 3, 4])
-        return np.array([3]) @ @@TODO esto funciona mirar arriba como he definido el discrete(que significa 1 valor de shape y que como maximo puede valer de 0 a 4) ver discrete aqui https: // gymnasium.farama.org/api/spaces/fundamental / y tambien ver el ejemplo de luarn que usa un box en el obervation y un discrete en el action en lunar y en cartpole lo mismo a mod de ejemplo https: // github.com/openai/gym/blob/master/gym/envs/box2d/lunar_lander.py https: // github.com/openai/gym/blob/master/gym/envs/classic_control/cartpole.py
+        return np.array([3]) @@@TODO esto funciona mirar arriba como he definido el discrete(que significa 1 valor de shape y que como maximo puede valer de 0 a 4) ver discrete aqui https: // gymnasium.farama.org/api/spaces/fundamental / y tambien ver el ejemplo de luarn que usa un box en el obervation y un discrete en el action en lunar y en cartpole lo mismo a mod de ejemplo https: // github.com/openai/gym/blob/master/gym/envs/box2d/lunar_lander.py https: // github.com/openai/gym/blob/master/gym/envs/classic_control/cartpole.py
         # return gym.spaces.Discrete(1, 1)
         # return observation.values()  # list(observation.values())
 
