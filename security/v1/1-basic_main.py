@@ -24,6 +24,5 @@ while (True):
     print(f'Reward: {reward}')
     if terminated or truncated:
         print(info)
-        break
         env.reset()
 env.close()
