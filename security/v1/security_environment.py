@@ -21,7 +21,6 @@ class REWARD(Enum):
     TRUNCATE=FAILURE # When the system is fully DOWN, end episode with penalty
 
 
-
 class SecurityEnvironment(gym.Env):
     '''
     Create a Gym environment and follow their rules (when possible) for external interaction.
@@ -103,7 +102,6 @@ class SecurityEnvironment(gym.Env):
         return observation, info
 
     def step(self, action):
-
         @@@@@@@@@TODO ANGEL FORCE (and document) WHEN ACTION=0, do not perform penalty
         @@@@@@@@@TODO ANGEL review step with the new reward structure (now timeout is success and other changes)
         @@@@@@@@@TODO ANGEL reduce the timeout steps to perform better convergence
@@ -116,7 +114,7 @@ class SecurityEnvironment(gym.Env):
         self._update_reward(REWARD.TIME)
 
         # Check abort (out of time, out of cost, etc..) and return early
-        if self._steps > self.MAX_STEPS:
+        if self._steps >= self.MAX_STEPS:
             info = self._get_info('TIMEOUT: The current set of defenses were not enough fast to solve the attack.')
             self._update_reward(REWARD.TIMEOUT)
             truncated = True

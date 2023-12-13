@@ -9,7 +9,7 @@ from security_environment import SecurityEnvironment
 from time import sleep
 from random import choice
 
-# Gym env 8in the future we will load it as other envs)
+# Gym env (in the future we will load it as other envs)
 env = SecurityEnvironment()
 actions = [0, 1, 2]  # available actions right now
 observation, info = env.reset()
