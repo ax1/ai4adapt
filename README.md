@@ -7,7 +7,8 @@ Reinforcement Learning (RL) for security defences optimization.
 > DEV status: check inside example files depending on the wanted lib for more installation instructions.
 
 ```sh
-pip install gymnasium[box2d]
+# aiohttp only required to use security_env_proxy. For Python 3.10+ asiyncio is built-in 
+pip install gymnasium[box2d] aiohttp
 ```
 
 ## Usage
