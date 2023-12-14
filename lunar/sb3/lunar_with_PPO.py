@@ -20,19 +20,19 @@ from stable_baselines3 import PPO
 from stable_baselines3.common.env_util import make_vec_env
 
 ENV_NAME = "LunarLander-v2"
-LEARN_ITERATIONS = 25_000
+LEARN_ITERATIONS = 2_500_000
 MODEL_NAME = ENV_NAME+'_PPO_'+str(LEARN_ITERATIONS)
 
 # Parallel environments
 
 vec_env = make_vec_env(ENV_NAME, n_envs=1)
-
+'''
 model = PPO("MlpPolicy", vec_env, verbose=1)
 model.learn(total_timesteps=LEARN_ITERATIONS)
 model.save(MODEL_NAME)
 
 del model  # remove to demonstrate saving and loading
-
+'''
 model = PPO.load(MODEL_NAME)
 
 obs = vec_env.reset()

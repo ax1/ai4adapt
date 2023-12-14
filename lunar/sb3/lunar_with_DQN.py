@@ -17,11 +17,12 @@ from stable_baselines3 import DQN
 from stable_baselines3.common.evaluation import evaluate_policy
 
 ENV_NAME = "LunarLander-v2"
-LEARN_ITERATIONS = 25_000
+LEARN_ITERATIONS = 2_500_000
 MODEL_NAME = ENV_NAME+'_DQN_'+str(LEARN_ITERATIONS)
 # Create environment
 env = gym.make(ENV_NAME, render_mode="rgb_array")
 
+'''
 # Instantiate the agent
 model = DQN("MlpPolicy", env, verbose=1)
 # Train the agent and display a progress bar
@@ -29,6 +30,7 @@ model.learn(total_timesteps=LEARN_ITERATIONS, progress_bar=True)
 # Save the agent
 model.save(MODEL_NAME)
 del model  # delete trained model to demonstrate loading
+'''
 
 # Load the trained agent
 # NOTE: if you have loading issue, you can pass `print_system_info=True`
