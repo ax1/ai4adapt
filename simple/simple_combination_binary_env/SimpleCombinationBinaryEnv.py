@@ -9,11 +9,11 @@ class SimpleEnv(gym.Env):
     Find a subset of switches to reach the solution.
     Real usage can be find nodes to a path, etc, get the right combination, etc.
 
-    Example: -v-v-----v--  -> OK
+    Example: -v-v---v--  -> OK
 
     Tests:
     - adding more observation space compared to SimpleCombinationEnv gives much less training time
-    - 1000 learn iterations when cpu=perf is success, however when cpu=quiet truncate
+    - 1000 learn iterations when cpu=perf->success, however when cpu=quiet->truncate
     - increasing the max-steps helps A LOT on solving the algorithm (changed steps 100 to 1000)
     - for now train=100 and max-steps=100 works (but on my computer)
     '''
@@ -22,9 +22,11 @@ class SimpleEnv(gym.Env):
     OBSERVATIONS = 10
     SOLUTION = [3, 7, 1]
     MAX_STEPS = 10
+
+    # REWARDS
     REWARD_ACTION = 1
     PENALTY_STEP = -1
-    REWARD_expected = 10
+    REWARD_SOLUTION = 10
     PENALTY_TIMEOUT = -10
 
     def __init__(self):
@@ -49,7 +51,7 @@ class SimpleEnv(gym.Env):
         initial = self.observation_space.sample()
         initial.fill(False)
         self._observation = initial
-        info = self._get_info(f'System restarting')
+        info = self._get_info('System restarting')
         return self._observation, info
 
     def step(self, action):
@@ -59,18 +61,18 @@ class SimpleEnv(gym.Env):
         self._reward += self.PENALTY_STEP
         info = self._get_info(f'Step count {self._steps}')
         if action in self._expected:
-            info = self._get_info(f'Reward: valid action found')
+            info = self._get_info(f'Reward: valid action {action} found')
             self._expected.remove(action)
             self._observation[action] = True
             self._reward += self.REWARD_ACTION
         if self._steps >= self.MAX_STEPS:
-            info = self._get_info('Truncate: Max steps reached')
+            info = self._get_info(f'Truncate: Max steps {self._steps} reached')
             self._reward += self.PENALTY_TIMEOUT
             truncated = True
         elif len(self._expected) == 0:
             info = self._get_info(f'Terminate: SUCCESS in {self._steps} steps')
             print(info)
-            self._reward += self.REWARD_expected
+            self._reward += self.REWARD_SOLUTION
             terminated = True
         return self._observation, self._reward, terminated, truncated, info
 

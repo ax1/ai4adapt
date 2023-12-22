@@ -39,7 +39,7 @@ class SecurityEnvironment(gym.Env):
         obj = requests.get(URL).json()
         self.ACTIONS = obj['actions']
         self.OBSERVATIONS = obj['observations']
-        self.MAX_STEPS = 1
+        self.MAX_STEPS = 100
         self.action_space = spaces.Discrete(len(self.ACTIONS))
         # @@TODO This may change later to a Box(int) depending on best to send observations
         self.observation_space = spaces.Box(low=0, high=1, shape=(len(self.OBSERVATIONS),), dtype=bool)
