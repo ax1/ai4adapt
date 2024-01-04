@@ -25,12 +25,12 @@ URL = 'http://localhost:8080/environment'
 class REWARD(Enum):
     SUCCESS = 100       # Attack is considered finish without catastrophic damage
     TIMEOUT = SUCCESS   # After a while, if the system is still UP, end with success
+    HEALED = SUCCESS    # After a while, if the system is still UP, end with success
     FAILURE = -100      # The attack destroys successfully the system
     TRUNCATE = FAILURE  # When the system is fully DOWN, end episode with penalty
     DEFENSE = -1        # The less actions, the better
     TIME = 1            # While still alive (even if damaged) the resilience is rewarded
     HEALTH = 1          # When system is still healthy an extra reward is given
-
 
 class SecurityEnvironment(gym.Env):
 
@@ -39,10 +39,12 @@ class SecurityEnvironment(gym.Env):
         obj = requests.get(URL).json()
         self.ACTIONS = obj['actions']
         self.OBSERVATIONS = obj['observations']
+        self.OBSERVATION_RESOLVED = 3
+        self.OBSERVATION_DAMAGED = 2
         self.MAX_STEPS = 100
         self.action_space = spaces.Discrete(len(self.ACTIONS))
-        # @@TODO This may change later to a Box(int) depending on best to send observations
-        self.observation_space = spaces.Box(low=0, high=1, shape=(len(self.OBSERVATIONS),), dtype=bool)
+        # Observations are [A,B,C] each with four states(0,1,2,3), where 0|3 are good and 1|2 are bad
+        self.observation_space = spaces.Box(low=0, high=3, shape=(len(self.OBSERVATIONS),), dtype=np.uint8)
         self._reward = 0
         self._steps = 0
 
@@ -72,8 +74,7 @@ class SecurityEnvironment(gym.Env):
 
         # REWARD based on observation, if not many damages, give a tip
         damages = np.count_nonzero(observation)
-        if damages < len(self.OBSERVATIONS) / 2:
-            self._update_reward(REWARD.HEALTH)
+        self._update_reward(REWARD.HEALTH * (len(observation) - damages))
 
         # Check TRUNCATE episode (in this case is SUCCESS because the system is resilient to the attack)
         if self._steps > self.MAX_STEPS:
@@ -82,8 +83,15 @@ class SecurityEnvironment(gym.Env):
             truncated = True
             return observation, self._reward, terminated, truncated, info
 
-        # Check TERMINATE episode. In this case is FAILURE we terminate when all the system is dowm
-        if damages == len(self.OBSERVATIONS):
+        # Check TRUNCATE based on SUCCESS damage control [ALL VMs in state protected=val3]
+        if np.all(observation == self.OBSERVATION_RESOLVED):
+            info = 'HEALED (SUCCESS): The episode was resolved with all items protected after the attack.'
+            self._update_reward(REWARD.HEALED)
+            truncated = True
+            return observation, self._reward, terminated, truncated, info
+
+        # Check TERMINATE episode. In this case is FAILURE we terminate when all the system is down
+        if np.all(observation == self.OBSERVATION_DAMAGED):
             info = 'END (FAILURE): All the observations are system damages'
             self._update_reward(REWARD.FAILURE)
             terminated = True
