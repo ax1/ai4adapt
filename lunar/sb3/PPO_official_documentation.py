@@ -36,6 +36,6 @@ model = PPO.load(NAME)
 obs = vec_env.reset()
 while True:
     action, _states = model.predict(obs)
-    # TODO ARF: with newer envs, done is replaced by terminated truncated
+    # ARF: with newer envs, done is replaced by terminated truncated
     obs, rewards, dones, info = vec_env.step(action)
     vec_env.render("human")
