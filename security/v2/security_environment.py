@@ -23,9 +23,8 @@ URL = 'http://localhost:8080/environment'
 
 
 class REWARD(Enum):
-    SUCCESS = 100       # Attack is considered finish without catastrophic damage
-    TIMEOUT = SUCCESS   # After a while, if the system is still UP, end with success
-    HEALED = SUCCESS    # After a while, if the system is still UP, end with success
+    TIMEOUT = 50        # After a while, if the system is still UP, end with success
+    HEALED = 100        # Some defenses have blocked all the attack, end with full success
     FAILURE = -100      # The attack destroys successfully the system
     TRUNCATE = FAILURE  # When the system is fully DOWN, end episode with penalty
     DEFENSE = -1        # The less actions, the better
@@ -61,7 +60,7 @@ class SecurityEnvironment(gym.Env):
         truncated = False
         self._steps += 1
         info = f'Executing step {self._steps}'
-        obs = requests.post(URL, {'action': action}).json()
+        obs = requests.post(f'{URL}?action={action}').json()
         observation = np.array(obs)
         # observation = self.observation_space.sample()
 
@@ -74,7 +73,7 @@ class SecurityEnvironment(gym.Env):
 
         # REWARD based on observation, if not many damages, give a tip
         damages = np.count_nonzero(observation)
-        self._update_reward(REWARD.HEALTH * (len(observation) - damages))
+        self._update_reward(REWARD.HEALTH, len(observation) - damages)
 
         # Check TRUNCATE episode (in this case is SUCCESS because the system is resilient to the attack)
         if self._steps > self.MAX_STEPS:
@@ -107,5 +106,5 @@ class SecurityEnvironment(gym.Env):
     def close(self):
         return None
 
-    def _update_reward(self, reward_type):
-        self._reward = self._reward + reward_type.value
+    def _update_reward(self, reward_type, times=1):
+        self._reward = self._reward + (reward_type.value) * times
