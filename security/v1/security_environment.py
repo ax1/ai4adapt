@@ -30,7 +30,6 @@ class SecurityEnvironment(gym.Env):
     Action: array (Discrete) from 0-n (See doc for match to real defense name).
 
     For rewards (See REWARD enum for updates):
-    @@@@@@@TODO Angel review this after the new changes in rewards strategy
         - Negative reward:
           - each defense executed. Amortization/cost of installed solutions,resources like electricity space, cloud resources , etc).
           - AND each step() (time passed) that the system is vulnerable. In other envs this is the time/gas/cost consumed.
@@ -102,9 +101,6 @@ class SecurityEnvironment(gym.Env):
         return observation, info
 
     def step(self, action):
-        @@@@@@@@@TODO ANGEL FORCE (and document) WHEN ACTION=0, do not perform penalty
-        @@@@@@@@@TODO ANGEL review step with the new reward structure (now timeout is success and other changes)
-        @@@@@@@@@TODO ANGEL reduce the timeout steps to perform better convergence
         terminated = False
         truncated = False
 
@@ -156,7 +152,7 @@ class SecurityEnvironment(gym.Env):
 
     def _load_actions(self):
         # @Eider: we must run a search response items or list them somehow.
-        print('Loading actions: TODO, in the future, this list should be a call to the available actions (Responses). NOTE: IDs as string to deal later with different nomenclatures for defense identifiers')
+        print('Loading actions: In the future, this list should be a call to the available actions (Responses). NOTE: IDs as string to deal later with different nomenclatures for defense identifiers')
         actions = (
             {'id': '0', 'name': 'NO ACTION','command': 'echo DEFENSE: NO ACTION'},
             {'id': '10023', 'name': 'firewall','command': 'echo DEFENSE: start firewall'},
@@ -170,9 +166,7 @@ class SecurityEnvironment(gym.Env):
 
     def _initialize_damaged_environment(self):
         subprocess.run(
-            'echo TODO put environment in distressed mode or restart distressed default environment', shell=True)
-        # TODO this will involve deleting and generating a new VM with the environment
-        # and also to start in attacked mode so initial status should be 1
+            'echo put environment in distressed mode or restart distressed default environment', shell=True)
 
     def _get_system_observation(self):
         '''
@@ -193,10 +187,9 @@ class SecurityEnvironment(gym.Env):
             # @Eider: timestamp will be useful later to fine-tune time cost instead of step=time
             'timestamp': 1682515800959
         }
-        # TODO in the future the DICT is a Dict<SPACES>, not a Dict(any) See https://gymnasium.farama.org/api/spaces/composite/
         # return gym.spaces.Dict(observation)  # only for MultiInputPolicy
         # return gym.spaces.MultiDiscrete([dummy_status, 1, 2, 3, 4])
-        return np.array([3]) @@@TODO esto funciona mirar arriba como he definido el discrete(que significa 1 valor de shape y que como maximo puede valer de 0 a 4) ver discrete aqui https: // gymnasium.farama.org/api/spaces/fundamental / y tambien ver el ejemplo de luarn que usa un box en el obervation y un discrete en el action en lunar y en cartpole lo mismo a mod de ejemplo https: // github.com/openai/gym/blob/master/gym/envs/box2d/lunar_lander.py https: // github.com/openai/gym/blob/master/gym/envs/classic_control/cartpole.py
+        return np.array([3])
         # return gym.spaces.Discrete(1, 1)
         # return observation.values()  # list(observation.values())
 

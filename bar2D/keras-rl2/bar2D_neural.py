@@ -27,7 +27,7 @@ def create_model(env):    # TODO check flatten layer really required for or scen
     len_observation = env.observation_space.shape[0]
     len_actions = env.action_space.n
     model = Sequential()
-    # TODO check flatten layer really required for or scenarios
+    # TODO check flatten layer really required for "or" scenarios
     # model.add(layers.Flatten(input_shape=(1, len_observation)))
     model.add(layers.Flatten(input_shape=(1,  2)))
     # model.add(layers.Dense(32, activation='relu',input_shape=env.observation_space.shape))
