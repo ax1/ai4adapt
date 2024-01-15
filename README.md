@@ -8,7 +8,7 @@ Reinforcement Learning (RL) for security defences optimization.
 
 ```sh
 # aiohttp only required to use security_env_proxy. For Python 3.10+ asiyncio is built-in 
-pip install gymnasium[box2d] aiohttp
+pip install gymnasium[box2d] aiohttp stable-baselines3[extra]
 ```
 
 ## Usage
