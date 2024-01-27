@@ -1,7 +1,7 @@
 '''
-See security_environment V1 as basis.
+(See security_environment V1 as basis).
 
-This module is kept with minimum code since lots of changes from 
+This module is kept with minimum code since lots of changes from
 time to time, so no need to leave reminder lines everywhere because it is
 harder later for maintenance. For reference info go to security_environment.py file.
 
@@ -31,17 +31,21 @@ class REWARD(Enum):
     TIME = 1            # While still alive (even if damaged) the resilience is rewarded
     HEALTH = 1          # When system is still healthy an extra reward is given
 
+
 class SecurityEnvironment(gym.Env):
 
     def __init__(self):
         super().__init__()
-        print2()
-        print2('-----------------------------------')
-        print2('INIT Security Environment')
-        print2('-----------------------------------')
+        print()
+        print('--------------------------------------------------------------------------------------------------')
+        print('                                 INIT Security Environment')
         obj = requests.get(URL).json()
         self.ACTIONS = obj['actions']
         self.OBSERVATIONS = obj['observations']
+        actions_short = list(map(lambda el: f"{str(el['pos'])}-{el['name']} on {el['target']}", self.ACTIONS))
+        print(f'\nActions: {actions_short}\n')
+        print(f'Observations: {self.OBSERVATIONS}')
+        print('--------------------------------------------------------------------------------------------------')
         self.OBSERVATION_RESOLVED = 3
         self.OBSERVATION_DAMAGED = 2
         self.MAX_STEPS = 50  # for the current type of attacks and given time constraints, better to use 50 to force finding a subset quicker
@@ -58,12 +62,14 @@ class SecurityEnvironment(gym.Env):
         print2()
         print2(f'RESET Security Environment (Episode {self._episodes})')
         print2('A: Action, O: Observation, R: Reward')
+        print2('(Waiting 2 or 3 minutes for infrastructure to start...)')
         self._reward, self._steps = 0, 0
         res = requests.delete(URL).json()
         obs, info = res.values()
         return np.array(obs), info
 
     def step(self, action):
+        print2(f'Executing action {action}-{self.action_desc(action)} ...')
         # Get all required data
         terminated = False
         truncated = False
@@ -115,8 +121,12 @@ class SecurityEnvironment(gym.Env):
     def close(self):
         return None
 
+    def action_desc(self, action):
+        return f"{self.ACTIONS[action]['name']} on {self.ACTIONS[action]['target']}"
+
     def _result(self, action, observation, reward, terminated, truncated, info):
-        print2(f'A{str(action).ljust(2)}', f'O{observation}', f'R{str(reward).ljust(3)}', info)
+        print2(f'A{str(action).ljust(2)}', f'O{observation}',
+               f'R{str(reward).ljust(3)}', info, self.action_desc(action))
         return observation, reward, terminated, truncated, info
 
     def _update_reward(self, reward_type, times=1):
