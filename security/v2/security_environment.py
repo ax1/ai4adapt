@@ -63,7 +63,7 @@ class SecurityEnvironment(gym.Env):
         self._reward, self._steps = 0, 0
         res = requests.delete(URL).json()
         obs, info = res.values()
-        return np.array(obs), info
+        return np.array(obs), self._normalize_info(info)
 
     def step(self, action):
         print2(f'Executing action {action}-{self.action_desc(action)} ...')
@@ -118,17 +118,24 @@ class SecurityEnvironment(gym.Env):
     def close(self):
         return None
 
+    def _normalize_info(self, info):
+        return {'info': f'{info}'}
+
     def action_desc(self, action):
         return f"{self.ACTIONS[action]['name']} on {self.ACTIONS[action]['target']}"
 
     def _result(self, action, observation, reward, terminated, truncated, info):
         print2(f'A{str(action).ljust(2)}', f'O{observation}',
                f'R{str(reward).ljust(3)}', info, self.action_desc(action))
-        return observation, reward, terminated, truncated, info
+        return observation, reward, terminated, truncated, self._normalize_info(info)
 
     def _update_reward(self, reward_type, times=1):
         self._reward = self._reward + (reward_type.value) * times
 
 
 def print2(*args):
+    # //TODO1: allow also save to File
+    # //TODO2: print in init() the reward strategy
+    # //Todo3: adapt some code to gym convention eg max steps and so on https://gymnasium.farama.org/tutorials/gymnasium_basics/environment_creation/
+
     print(f"{datetime.now().isoformat(timespec='seconds')}\t", *args) if args else print()
