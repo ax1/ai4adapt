@@ -1,7 +1,6 @@
 import gymnasium as gym
 from gymnasium import spaces
 import numpy as np
-import traceback
 
 
 class SimpleEnv(gym.Env):
@@ -41,7 +40,7 @@ class SimpleEnv(gym.Env):
         initial = self.observation_space.sample()
         initial.fill(0)
         self._observation = initial
-        info = self._get_info(f'System restarting')
+        info = self._get_info('System restarting')
         return self._observation, info
 
     def step(self, action):
@@ -51,9 +50,9 @@ class SimpleEnv(gym.Env):
         self._reward += self.PENALTY_STEP
         info = self._get_info(f'Step count {self._steps}')
         if action in self._expected:
-            info = self._get_info(f'Reward: valid action found')
+            info = self._get_info('Reward: valid action found')
             self._expected.remove(action)
-            self._observation[0] = self._observation[0] + 1/len(self.SOLUTION)
+            self._observation[0] = self._observation[0] + 1 / len(self.SOLUTION)
             self._reward += self.REWARD_ACTION
         if self._steps >= self.MAX_STEPS:
             info = self._get_info('Truncate: Max steps reached')

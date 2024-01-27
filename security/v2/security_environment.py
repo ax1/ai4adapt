@@ -9,17 +9,14 @@ Note that all HTTP operations are sync, this is not an error, this is because th
 learning algorithms we're using for now are synchronous.
 '''
 
-import traceback
 import gymnasium as gym
 from gymnasium import spaces
-from random import random
-import subprocess
 from enum import Enum
 import numpy as np
 import requests
 from datetime import datetime
 
-URL = 'http://localhost:8080/environment'
+URL = 'http://localhost:8080/environment_dummy'
 
 
 class REWARD(Enum):
@@ -134,7 +131,4 @@ class SecurityEnvironment(gym.Env):
 
 
 def print2(*args):
-    if not args:
-        print()
-    else:
-        print(f"{datetime.now().isoformat(timespec='seconds')}\t", *args)
+    print(f"{datetime.now().isoformat(timespec='seconds')}\t", *args) if args else print()
