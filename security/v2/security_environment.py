@@ -87,7 +87,7 @@ class SecurityEnvironment(gym.Env):
         self._update_reward(REWARD.HEALTH, len(observation) - damages)
 
         # Check TRUNCATE episode (in this case is SUCCESS because the system is resilient to the attack)
-        if self._steps > self.MAX_STEPS:
+        if self._steps >= self.MAX_STEPS:
             info = 'TIMEOUT (SUCCESS): The episode reached MAX_STEPS and the system is still ALIVE.'
             self._update_reward(REWARD.TIMEOUT)
             truncated = True
