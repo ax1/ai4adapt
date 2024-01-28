@@ -20,13 +20,12 @@ URL = 'http://localhost:8080/environment_dummy'
 
 
 class REWARD(Enum):
-    TIMEOUT = 50        # After a while, if the system is still UP, end with success
+    TIMEOUT = 0         # After a while, if the system is still UP, end with success
     HEALED = 100        # Some defenses have blocked all the attack, end with full success
     FAILURE = -100      # The attack destroys successfully the system
-    TRUNCATE = FAILURE  # When the system is fully DOWN, end episode with penalty
     DEFENSE = -1        # The less actions, the better
     TIME = 1            # While still alive (even if damaged) the resilience is rewarded
-    HEALTH = 1          # When system is still healthy an extra reward is given
+    HEALTH = 0          # When system is still healthy an extra reward is given
 
 
 class SecurityEnvironment(gym.Env):
@@ -66,12 +65,12 @@ class SecurityEnvironment(gym.Env):
         return np.array(obs), self._normalize_info(info)
 
     def step(self, action):
-        print2(f'Executing action {action}-{self.action_desc(action)} ...')
+        # print2(f'Executing action {action}-{self.action_desc(action)} ...')
         # Get all required data
         terminated = False
         truncated = False
+        info = ''
         self._steps += 1
-        info = f'Step {self._steps}'
         obs = requests.post(f'{URL}?action={action}').json()
         observation = np.array(obs)
         # observation = self.observation_space.sample()
@@ -125,8 +124,8 @@ class SecurityEnvironment(gym.Env):
         return f"{self.ACTIONS[action]['name']} on {self.ACTIONS[action]['target']}"
 
     def _result(self, action, observation, reward, terminated, truncated, info):
-        print2(f'A{str(action).ljust(2)}', f'O{observation}',
-               f'R{str(reward).ljust(3)}', info, self.action_desc(action))
+        print2(f'{str(self._steps).rjust(2)}:', f'A{str(action).ljust(2)}', f'O{observation}',
+               f'R{str(reward).ljust(3)}', self.action_desc(action), info)
         return observation, reward, terminated, truncated, self._normalize_info(info)
 
     def _update_reward(self, reward_type, times=1):
@@ -137,5 +136,4 @@ def print2(*args):
     # //TODO1: allow also save to File
     # //TODO2: print in init() the reward strategy
     # //Todo3: adapt some code to gym convention eg max steps and so on https://gymnasium.farama.org/tutorials/gymnasium_basics/environment_creation/
-
     print(f"{datetime.now().isoformat(timespec='seconds')}\t", *args) if args else print()
