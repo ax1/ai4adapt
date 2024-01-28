@@ -20,10 +20,10 @@ URL = 'http://localhost:8080/environment_dummy'
 
 
 class REWARD(Enum):
-    TIMEOUT = 0         # After a while, if the system is still UP, end with success
-    HEALED = 100        # Some defenses have blocked all the attack, end with full success
-    FAILURE = -100      # The attack destroys successfully the system
-    DEFENSE = -1        # The less actions, the better
+    WIN = 100           # Some defenses have blocked all the attacks, end with FULL success. This reward promotes
+    SURVIVE = 0         # After a while, if the system is still UP, end with success (is resilient)
+    DIE = -100          # The attack destroys successfully the system
+    USE_DEFENSE = -1    # The less weapons spent in defense, the better
     TIME = 1            # While still alive (even if damaged) the resilience is rewarded
     HEALTH = 0          # When system is still healthy an extra reward is given
 
@@ -32,16 +32,20 @@ class SecurityEnvironment(gym.Env):
 
     def __init__(self):
         super().__init__()
-        print()
-        print('--------------------------------------------------------------------------------------------------')
-        print('                                 INIT Security Environment')
+        print2()
+        print2('----------------------------------------------------------------------------------------')
+        print2('                       INIT Security Environment')
+        print2('----------------------------------------------------------------------------------------')
         obj = requests.get(URL).json()
+        rewards_desc = [f'{el.name}: {el.value}' for el in REWARD]
         self.ACTIONS = obj['actions']
         self.OBSERVATIONS = obj['observations']
         actions_short = list(map(lambda el: f"{str(el['pos'])}-{el['name']} on {el['target']}", self.ACTIONS))
-        print(f'\nActions: {actions_short}\n')
-        print(f'Observations: {self.OBSERVATIONS}')
-        print('--------------------------------------------------------------------------------------------------')
+        print2(f'Rewards (strategy): {rewards_desc}')
+        print2(f'Observations (targets): {self.OBSERVATIONS}')
+        print2(f'Actions (defenses): {actions_short}')
+
+        print2('----------------------------------------------------------------------------------------')
         self.OBSERVATION_RESOLVED = 3
         self.OBSERVATION_DAMAGED = 2
         self.MAX_STEPS = 50  # for the current type of attacks and given time constraints, better to use 50 to force finding a subset quicker
@@ -80,7 +84,7 @@ class SecurityEnvironment(gym.Env):
 
         # REWARD/PENALTY for action consumed
         if action != 0:
-            self._update_reward(REWARD.DEFENSE)
+            self._update_reward(REWARD.USE_DEFENSE)
 
         # REWARD based on observation, if not many damages, give a tip
         damages = np.count_nonzero(observation)
@@ -88,22 +92,22 @@ class SecurityEnvironment(gym.Env):
 
         # Check TRUNCATE episode (in this case is SUCCESS because the system is resilient to the attack)
         if self._steps >= self.MAX_STEPS:
-            info = 'TIMEOUT (SUCCESS): The episode reached MAX_STEPS and the system is still ALIVE.'
-            self._update_reward(REWARD.TIMEOUT)
+            info = f'{REWARD.SURVIVE} (SUCCESS): The episode reached MAX_STEPS and the system is still ALIVE.'
+            self._update_reward(REWARD.SURVIVE)
             truncated = True
             return self._result(action, observation, self._reward, terminated, truncated, info)
 
         # Check TRUNCATE based on SUCCESS damage control [ALL VMs in state protected=val3]
         if np.all(observation == self.OBSERVATION_RESOLVED):
-            info = 'HEALED (SUCCESS): The episode was resolved with all items protected after the attack.'
-            self._update_reward(REWARD.HEALED)
+            info = f'{REWARD.WIN} (SUCCESS): The episode was resolved with all items protected after the attack.'
+            self._update_reward(REWARD.WIN)
             truncated = True
             return self._result(action, observation, self._reward, terminated, truncated, info)
 
         # Check TERMINATE episode. In this case is FAILURE we terminate when all the system is down
         if np.all(observation == self.OBSERVATION_DAMAGED):
-            info = 'END (FAILURE): All the observations are system damages'
-            self._update_reward(REWARD.FAILURE)
+            info = f'{REWARD.DIE} (FAILURE): All the observations are critical damages. The system cannot be recovered.'
+            self._update_reward(REWARD.DIE)
             terminated = True
             return self._result(action, observation, self._reward, terminated, truncated, info)
 
@@ -125,7 +129,7 @@ class SecurityEnvironment(gym.Env):
 
     def _result(self, action, observation, reward, terminated, truncated, info):
         print2(f'{str(self._steps).rjust(2)}:', f'A{str(action).ljust(2)}', f'O{observation}',
-               f'R{str(reward).ljust(3)}', self.action_desc(action), info)
+               f'R{str(reward).ljust(3)}', self.action_desc(action), ' | ', info)
         return observation, reward, terminated, truncated, self._normalize_info(info)
 
     def _update_reward(self, reward_type, times=1):
