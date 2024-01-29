@@ -16,7 +16,7 @@ import numpy as np
 import requests
 from datetime import datetime
 
-URL = 'http://localhost:8080/environment_dummy'
+URL = 'http://localhost:8080/dummy_environment'
 
 
 class REWARD(Enum):
@@ -30,12 +30,13 @@ class REWARD(Enum):
 
 class SecurityEnvironment(gym.Env):
 
-    def __init__(self):
+    def __init__(self, description=None):
         super().__init__()
         print2()
         print2('----------------------------------------------------------------------------------------')
         print2('                       INIT Security Environment')
         print2('----------------------------------------------------------------------------------------')
+        print2(f'RL agent:{description}') if description else None
         obj = requests.get(URL).json()
         rewards_desc = [f'{el.name}: {el.value}' for el in REWARD]
         self.ACTIONS = obj['actions']
@@ -128,8 +129,8 @@ class SecurityEnvironment(gym.Env):
         return f"{self.ACTIONS[action]['name']} on {self.ACTIONS[action]['target']}"
 
     def _result(self, action, observation, reward, terminated, truncated, info):
-        print2(f'{str(self._steps).rjust(2)}:', f'A{str(action).ljust(2)}', f'O{observation}',
-               f'R{str(reward).ljust(3)}', self.action_desc(action), ' | ', info)
+        print2(f'{str(self._steps).ljust(2)}:', f'A{str(action).ljust(2)}', f'O{observation}',
+               f'R{str(reward).ljust(3)}', self.action_desc(action), info)
         return observation, reward, terminated, truncated, self._normalize_info(info)
 
     def _update_reward(self, reward_type, times=1):
@@ -137,7 +138,4 @@ class SecurityEnvironment(gym.Env):
 
 
 def print2(*args):
-    # //TODO1: allow also save to File
-    # //TODO2: print in init() the reward strategy
-    # //Todo3: adapt some code to gym convention eg max steps and so on https://gymnasium.farama.org/tutorials/gymnasium_basics/environment_creation/
     print(f"{datetime.now().isoformat(timespec='seconds')}\t", *args) if args else print()

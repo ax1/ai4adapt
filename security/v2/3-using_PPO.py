@@ -1,12 +1,14 @@
 from security_environment import SecurityEnvironment
 from stable_baselines3 import PPO
 
+MAX_TRAINING_STEPS = 1_000
+EXPERIMENT = f'PPO {MAX_TRAINING_STEPS} steps, default params, SB3'
 
 def train():
     # lookout: PPO default block steps aways forced to 2048 blocks, override with n_steps
     # model = PPO("MlpPolicy", SecurityEnvironment(), verbose=1, learning_rate=0.1, gamma=0.01)
-    model = PPO("MlpPolicy", SecurityEnvironment(), verbose=1, n_steps=256)
-    model.learn(total_timesteps=1_000, progress_bar=False)
+    model = PPO("MlpPolicy", SecurityEnvironment(EXPERIMENT), verbose=1, n_steps=256)
+    model.learn(total_timesteps=MAX_TRAINING_STEPS, progress_bar=False)
     return model
 
 
@@ -26,5 +28,5 @@ def test(model):
 
 
 model = train()
-# model.save('SEC_ENV')
+model.save(EXPERIMENT.replace(',', '_').replace(' ', '_'))
 test(model)
