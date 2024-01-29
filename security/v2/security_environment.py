@@ -16,7 +16,7 @@ import numpy as np
 import requests
 from datetime import datetime
 
-URL = 'http://localhost:8080/dummy_environment'
+URL = 'http://localhost:8080/environment'
 
 
 class REWARD(Enum):
@@ -36,7 +36,7 @@ class SecurityEnvironment(gym.Env):
         print2('----------------------------------------------------------------------------------------')
         print2('                       INIT Security Environment')
         print2('----------------------------------------------------------------------------------------')
-        print2(f'RL agent:{description}') if description else None
+        print2(f'RL agent: {description}') if description else None
         obj = requests.get(URL).json()
         rewards_desc = [f'{el.name}: {el.value}' for el in REWARD]
         self.ACTIONS = obj['actions']
@@ -45,7 +45,6 @@ class SecurityEnvironment(gym.Env):
         print2(f'Rewards (strategy): {rewards_desc}')
         print2(f'Observations (targets): {self.OBSERVATIONS}')
         print2(f'Actions (defenses): {actions_short}')
-
         print2('----------------------------------------------------------------------------------------')
         self.OBSERVATION_RESOLVED = 3
         self.OBSERVATION_DAMAGED = 2
