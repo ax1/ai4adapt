@@ -20,12 +20,14 @@ URL = 'http://localhost:8080/environment'
 
 
 class REWARD(Enum):
+    # @@@@@ TODO NOW WE WILL HAVE ATOMIC 3 EG [0,3,0], SO GIFT ALSO AS PARTIAL WIN
+    # @@ TODO FULL WIN is if TOTO=0 OR WIZARD=0, considering we have already the stop wizard indicator to the rl agent
     WIN = 100           # Some defenses have blocked all the attacks, end with FULL success. This reward promotes
     SURVIVE = 0         # After a while, if the system is still UP, end with success (is resilient)
     DIE = -100          # The attack destroys successfully the system
     USE_DEFENSE = -1    # The less weapons spent in defense, the better
     TIME = 1            # While still alive (even if damaged) the resilience is rewarded
-    HEALTH = 0          # When system is still healthy an extra reward is given
+    HEALTH = 1          # When system is still healthy an extra reward is given
 
 
 class SecurityEnvironment(gym.Env):
@@ -48,7 +50,7 @@ class SecurityEnvironment(gym.Env):
         print2('----------------------------------------------------------------------------------------')
         self.OBSERVATION_RESOLVED = 3
         self.OBSERVATION_DAMAGED = 2
-        self.MAX_STEPS = 50  # for the current type of attacks and given time constraints, better to use 50 to force finding a subset quicker
+        self.MAX_STEPS = 50   # Our current attack is 48 steps
         self.action_space = spaces.Discrete(len(self.ACTIONS))
         # Observations are [A,B,C] each with four states(0,1,2,3), where 0|3 are good and 1|2 are bad
         self.observation_space = spaces.Box(low=0, high=3, shape=(len(self.OBSERVATIONS),), dtype=np.uint8)
@@ -62,10 +64,11 @@ class SecurityEnvironment(gym.Env):
         print2()
         print2(f'RESET Security Environment (Episode {self._episodes})')
         print2('A: Action, O: Observation, R: Reward')
-        print2('(Waiting 2 or 3 minutes for infrastructure to start...)')
+        print2('(Waiting 4 or 5 minutes for infrastructure to start...)')
         self._reward, self._steps = 0, 0
         res = requests.delete(URL).json()
         obs, info = res.values()
+        print2(f'{info}. Initial observation: {obs}')
         return np.array(obs), self._normalize_info(info)
 
     def step(self, action):
