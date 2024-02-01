@@ -21,8 +21,7 @@ URL = 'http://localhost:8080/environment'
 
 class REWARD(Enum):
     # @@@@@ TODO NOW WE WILL HAVE ATOMIC 3 EG [0,3,0], SO GIFT ALSO AS PARTIAL WIN
-    # @@ TODO FULL WIN is if TOTO=0 OR WIZARD=0, considering we have already the stop wizard indicator to the rl agent
-    WIN = 100           # Some defenses have blocked all the attacks, end with FULL success. This reward promotes
+    WIN = 100           # Some defenses have blocked all the attacks, end with FULL success.
     SURVIVE = 0         # After a while, if the system is still UP, end with success (is resilient)
     DIE = -100          # The attack destroys successfully the system
     USE_DEFENSE = -1    # The less weapons spent in defense, the better
@@ -48,8 +47,10 @@ class SecurityEnvironment(gym.Env):
         print2(f'Observations (targets): {self.OBSERVATIONS}')
         print2(f'Actions (defenses): {actions_short}')
         print2('----------------------------------------------------------------------------------------')
-        self.OBSERVATION_RESOLVED = 3
+        self.OBSERVATION_NORMAL = 0
+        self.OBSERVATION_COMPROMISED = 1
         self.OBSERVATION_DAMAGED = 2
+        self.OBSERVATION_RESOLVED = 3
         self.MAX_STEPS = 50   # Our current attack is 48 steps
         self.action_space = spaces.Discrete(len(self.ACTIONS))
         # Observations are [A,B,C] each with four states(0,1,2,3), where 0|3 are good and 1|2 are bad
@@ -100,9 +101,9 @@ class SecurityEnvironment(gym.Env):
             truncated = True
             return self._result(action, observation, self._reward, terminated, truncated, info)
 
-        # Check TRUNCATE based on SUCCESS damage control [ALL VMs in state protected=val3]
-        if np.all(observation == self.OBSERVATION_RESOLVED):
-            info = f'{REWARD.WIN} (SUCCESS): The episode was resolved with all items protected after the attack.'
+        # Check TRUNCATE based on SUCCESS damage control [not all VMs were attacked]
+        if self._is_success(observation):
+            info = f'{REWARD.WIN} (SUCCESS): The attack was stopped before damaging all the machines.'
             self._update_reward(REWARD.WIN)
             truncated = True
             return self._result(action, observation, self._reward, terminated, truncated, info)
@@ -127,6 +128,20 @@ class SecurityEnvironment(gym.Env):
     def _normalize_info(self, info):
         return {'info': f'{info}'}
 
+    def _is_success(self, obs):
+        '''
+        If a target is 3 and the following ones are 0, the attack cannot develop anymore->SUCCESS
+        '''
+        for r in range(len(obs)):
+            if obs[r] == 3:
+                remain = []
+                for s in range(r + 1, len(obs)):
+                    if obs[s] == 0 or obs[s] == 3:
+                        remain.append(obs[s])
+                if (len(remain) == len(obs) - r - 1):
+                    return True
+        return False
+
     def action_desc(self, action):
         return f"{self.ACTIONS[action]['name']} on {self.ACTIONS[action]['target']}"
 
@@ -140,4 +155,4 @@ class SecurityEnvironment(gym.Env):
 
 
 def print2(*args):
-    print(f"{datetime.now().isoformat(timespec='seconds')}\t", *args) if args else print()
+    print(f"{datetime.now().isoformat(timespec='seconds')} ", *args) if args else print()

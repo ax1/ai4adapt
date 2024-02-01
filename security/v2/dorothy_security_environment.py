@@ -20,12 +20,13 @@ URL = 'http://localhost:8080/environment'
 
 
 class REWARD(Enum):
-    WIN = 100           # Some defenses have blocked all the attacks, end with FULL success. This reward promotes
+    # @@@@@ TODO NOW WE WILL HAVE ATOMIC 3 EG [0,3,0], SO GIFT ALSO AS PARTIAL WIN
+    WIN = 100           # Some defenses have blocked all the attacks, end with FULL success.
     SURVIVE = 0         # After a while, if the system is still UP, end with success (is resilient)
     DIE = -100          # The attack destroys successfully the system
     USE_DEFENSE = -1    # The less weapons spent in defense, the better
     TIME = 1            # While still alive (even if damaged) the resilience is rewarded
-    HEALTH = 0          # When system is still healthy an extra reward is given
+    HEALTH = 1          # When system is still healthy an extra reward is given
 
 
 class SecurityEnvironment(gym.Env):
@@ -46,9 +47,11 @@ class SecurityEnvironment(gym.Env):
         print2(f'Observations (targets): {self.OBSERVATIONS}')
         print2(f'Actions (defenses): {actions_short}')
         print2('----------------------------------------------------------------------------------------')
-        self.OBSERVATION_RESOLVED = 3
+        self.OBSERVATION_NORMAL = 0
+        self.OBSERVATION_COMPROMISED = 1
         self.OBSERVATION_DAMAGED = 2
-        self.MAX_STEPS = 10  # for the current type of attacks and given time constraints, better to use 50 to force finding a subset quicker
+        self.OBSERVATION_RESOLVED = 3
+        self.MAX_STEPS = 10    # Our current attack is 48 steps
         self.action_space = spaces.Discrete(12)
         # Observations are [A,B,C] each with four states(0,1,2,3), where 0|3 are good and 1|2 are bad
         self.observation_space = spaces.Box(low=0, high=3, shape=(len(self.OBSERVATIONS),), dtype=np.uint8)
@@ -62,10 +65,11 @@ class SecurityEnvironment(gym.Env):
         print2()
         print2(f'RESET Security Environment (Episode {self._episodes})')
         print2('A: Action, O: Observation, R: Reward')
-        print2('(Waiting 2 or 3 minutes for infrastructure to start...)')
+        print2('(Waiting 4 or 5 minutes for infrastructure to start...)')
         self._reward, self._steps = 0, 0
         res = requests.delete(URL).json()
         obs, info = res.values()
+        print2(f'{info}. Initial observation: {obs}')
         return np.array(obs), self._normalize_info(info)
 
     def step(self, action):
@@ -92,18 +96,14 @@ class SecurityEnvironment(gym.Env):
 
         # Check TRUNCATE episode (in this case is SUCCESS because the system is resilient to the attack)
         if self._steps >= self.MAX_STEPS:
+            info = f'{REWARD.SURVIVE} (SUCCESS): The episode reached MAX_STEPS and the system is still ALIVE.'
+            self._update_reward(REWARD.SURVIVE)
             truncated = True
-            if observation[0] < 2:
-                self._update_reward(REWARD.WIN)
-                info = f'{REWARD.WIN} (SUCCESS): The episode was resolved with DOROTHY minor damages.'
-            else:
-                info = f'{REWARD.SURVIVE} (SUCCESS): The episode reached MAX_STEPS and the system is still ALIVE.'
-                self._update_reward(REWARD.SURVIVE)
             return self._result(action, observation, self._reward, terminated, truncated, info)
 
-        # Check TRUNCATE based on SUCCESS damage control [ALL VMs in state protected=val3]
-        if np.all(observation == self.OBSERVATION_RESOLVED):
-            info = f'{REWARD.WIN} (SUCCESS): The episode was resolved with all items protected after the attack.'
+        # Check TRUNCATE based on SUCCESS damage control [not all VMs were attacked]
+        if self._is_success(observation):
+            info = f'{REWARD.WIN} (SUCCESS): The attack was stopped before damaging all the machines.'
             self._update_reward(REWARD.WIN)
             truncated = True
             return self._result(action, observation, self._reward, terminated, truncated, info)
@@ -128,6 +128,20 @@ class SecurityEnvironment(gym.Env):
     def _normalize_info(self, info):
         return {'info': f'{info}'}
 
+    def _is_success(self, obs):
+        '''
+        If a target is 3 and the following ones are 0, the attack cannot develop anymore->SUCCESS
+        '''
+        for r in range(len(obs)):
+            if obs[r] == 3:
+                remain = []
+                for s in range(r + 1, len(obs)):
+                    if obs[s] == 0 or obs[s] == 3:
+                        remain.append(obs[s])
+                if (len(remain) == len(obs) - r - 1):
+                    return True
+        return False
+
     def action_desc(self, action):
         return f"{self.ACTIONS[action]['name']} on {self.ACTIONS[action]['target']}"
 
@@ -141,4 +155,4 @@ class SecurityEnvironment(gym.Env):
 
 
 def print2(*args):
-    print(f"{datetime.now().isoformat(timespec='seconds')}\t", *args) if args else print()
+    print(f"{datetime.now().isoformat(timespec='seconds')} ", *args) if args else print()
