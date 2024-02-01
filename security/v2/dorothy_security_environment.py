@@ -73,6 +73,7 @@ class SecurityEnvironment(gym.Env):
         return np.array(obs), self._normalize_info(info)
 
     def step(self, action):
+        action = 0
         # print2(f'Executing action {action}-{self.action_desc(action)} ...')
         # Get all required data
         terminated = False
