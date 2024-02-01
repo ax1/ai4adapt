@@ -1,9 +1,11 @@
 # @@@@@@@@@@@@@ TODOO SWITCH BACK TO SEC_ENV NOT DUMMY
 from dorothy_security_environment import SecurityEnvironment
 from stable_baselines3 import PPO
+import os
 
 MAX_TRAINING_STEPS = 1_00
 EXPERIMENT = f'PPO {MAX_TRAINING_STEPS} steps, default params, SB3'
+FILENAME = EXPERIMENT.replace(',', '_').replace(' ', '_')
 
 def train():
     # lookout: PPO default block steps aways forced to 2048 blocks, override with n_steps
@@ -28,7 +30,9 @@ def test(model):
         # vec_env.reset()
 
 
-# model = train()
-# model.save(EXPERIMENT.replace(',', '_').replace(' ', '_'))
-model = PPO.load('PPO_100_steps__default_params__SB3')
-test(model)
+model = train()
+model.save(FILENAME)
+
+# dirname, filename = os.path.split(os.path.abspath(__file__))
+# model = PPO.load(f'{dirname}/{FILENAME}', SecurityEnvironment(EXPERIMENT))
+# test(model)
