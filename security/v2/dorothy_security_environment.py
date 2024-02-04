@@ -51,7 +51,7 @@ class SecurityEnvironment(gym.Env):
         self.OBSERVATION_COMPROMISED = 1
         self.OBSERVATION_DAMAGED = 2
         self.OBSERVATION_RESOLVED = 3
-        self.MAX_STEPS = 10    # Our current attack is 48 steps
+        self.MAX_STEPS = 100    # Our current attack is 48 steps
         self.action_space = spaces.Discrete(12)
         # Observations are [A,B,C] each with four states(0,1,2,3), where 0|3 are good and 1|2 are bad
         self.observation_space = spaces.Box(low=0, high=3, shape=(len(self.OBSERVATIONS),), dtype=np.uint8)
