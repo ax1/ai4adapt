@@ -2,12 +2,20 @@ import logging
 from datetime import datetime
 import re
 
-filename = f"AI4ADAPT_{re.sub(r'(-|:)*','',str(datetime.now().isoformat(timespec='seconds')))}.log"
-FORMAT = '%(asctime)s %(clientip)2s %(user)s %(message)s'
-logging.basicConfig(filename=filename, filemode='a', format=FORMAT, datefmt='%Y-%m-%dT%H:%M:%S')
-d = {'clientip': '192.168.0.1', 'user': 'user1'}
+
+filename = "aaaaaa.log"
+FORMAT = '%(asctime)s %(message)s'
+logging.basicConfig(level=logging.INFO, filename=filename, filemode='a', format=FORMAT)
 logger = logging.getLogger('tcpserver')
-logger.warning('Protocol problem: %s', 'connection reset', extra=d)
+logger.info('aaa')
+
+
+# filename = f"AI4ADAPT_{re.sub(r'(-|:)*','',str(datetime.now().isoformat(timespec='seconds')))}.log"
+# FORMAT = '%(asctime)s %(clientip)2s %(user)s %(message)s'
+# logging.basicConfig(filename=filename, filemode='a', format=FORMAT, datefmt='%Y-%m-%dT%H:%M:%S')
+# d = {'clientip': '192.168.0.1', 'user': 'user1'}
+# logger = logging.getLogger('tcpserver')
+# logger.warning('Protocol problem: %s', 'connection reset', extra=d)
 
 
 # logging.basicConfig(filename='app.log', filemode='a', format='%(name)s - %(levelname)s - %(message)s')
