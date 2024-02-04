@@ -4,6 +4,7 @@ __pycache__
 *.zip
 *.tar.*
 *.xz
+*.log
 private
 .venv
 TODOS_PRIVATE.md

@@ -15,8 +15,11 @@ from enum import Enum
 import numpy as np
 import requests
 from datetime import datetime
+import logging
+import re
 
-URL = 'http://localhost:8080/environment'
+URL = 'http://localhost:8080/dummy_environment'
+LOGGER_ENABLED = False
 
 
 class REWARD(Enum):
@@ -24,15 +27,17 @@ class REWARD(Enum):
     WIN = 100           # Some defenses have blocked all the attacks, end with FULL success.
     SURVIVE = 0         # After a while, if the system is still UP, end with success (is resilient)
     DIE = -100          # The attack destroys successfully the system
-    USE_DEFENSE = -1    # The less weapons spent in defense, the better
-    TIME = 1            # While still alive (even if damaged) the resilience is rewarded
-    HEALTH = 1          # When system is still healthy an extra reward is given
+    USE_DEFENSE = -5    # The less weapons spent in defense, the better
+    TIME = 0            # While still alive (even if damaged) the resilience is rewarded
+    HEALTH = 0          # DO NOT USE, it give bad training results # When system is still healthy an extra reward is given
 
 
 class SecurityEnvironment(gym.Env):
 
-    def __init__(self, description=None):
+    def __init__(self, description='SecurityEnvironment'):
         super().__init__()
+        if (LOGGER_ENABLED):
+            self._init_logger(description)
         print2()
         print2('----------------------------------------------------------------------------------------')
         print2('                       INIT Security Environment')
@@ -59,6 +64,12 @@ class SecurityEnvironment(gym.Env):
         self._steps = 0
         self._episodes = 0
 
+    def _init_logger(self, desc):
+        filename = f"{desc}_{re.sub(r'(-|:)*','',str(datetime.now().isoformat(timespec='seconds')))}.log"
+        FORMAT = '%(asctime)s %(message)s'
+        logging.basicConfig(filename=filename, filemode='w', format=FORMAT,
+                            level=logging.DEBUG, datefmt='%Y-%m-%dT%H:%M:%S')
+
     def reset(self, seed=None, options=None):
         super().reset(seed=seed, options=options)
         self._episodes += 1
@@ -69,6 +80,8 @@ class SecurityEnvironment(gym.Env):
         self._reward, self._steps = 0, 0
         res = requests.delete(URL).json()
         obs, info = res.values()
+        if obs[2] == 1:
+            print('reset')
         print2(f'{info}. Initial observation: {obs}')
         return np.array(obs), self._normalize_info(info)
 
@@ -108,9 +121,10 @@ class SecurityEnvironment(gym.Env):
             truncated = True
             return self._result(action, observation, self._reward, terminated, truncated, info)
 
-        # Check TERMINATE episode. In this case is FAILURE we terminate when all the system is down
-        if np.all(observation == self.OBSERVATION_DAMAGED):
-            info = f'{REWARD.DIE} (FAILURE): All the observations are critical damages. The system cannot be recovered.'
+        # Check TERMINATE episode. In this case is FAILURE we terminate when last target is dowm
+        # if np.all(observation == self.OBSERVATION_DAMAGED):
+        if observation[len(self.OBSERVATIONS) - 1] == self.OBSERVATION_DAMAGED:
+            info = f'{REWARD.DIE} (FAILURE): The last target was damaged.The system cannot recover'
             self._update_reward(REWARD.DIE)
             terminated = True
             return self._result(action, observation, self._reward, terminated, truncated, info)
@@ -131,15 +145,14 @@ class SecurityEnvironment(gym.Env):
     def _is_success(self, obs):
         '''
         If a target is 3 and the following ones are 0, the attack cannot develop anymore->SUCCESS
+        BE CAREFUL when modifying this function because it is CRITICAL for training
         '''
-        for r in range(len(obs)):
-            if obs[r] == 3:
-                remain = []
-                for s in range(r + 1, len(obs)):
-                    if obs[s] == 0 or obs[s] == 3:
-                        remain.append(obs[s])
-                if (len(remain) == len(obs) - r - 1):
-                    return True
+        if obs[2] == 3:
+            return True
+        elif obs[1] == 3 and obs[2] == 0:
+            return True
+        elif obs[0] == 3 and obs[1] == 0 and obs[2] == 0:
+            return True
         return False
 
     def action_desc(self, action):
@@ -156,3 +169,13 @@ class SecurityEnvironment(gym.Env):
 
 def print2(*args):
     print(f"{datetime.now().isoformat(timespec='seconds')} ", *args) if args else print()
+    # logging.info(*args) if (LOGGER_ENABLED) else None
+
+
+'''
+filename = f"desc_{re.sub(r'(-|:)*','',str(datetime.now().isoformat(timespec='seconds')))}.log"
+FORMAT = '%(asctime)s %(message)s'
+logging.basicConfig(filename=filename, filemode='a', format=FORMAT)
+logger = logging.getLogger('tcpserver')
+logger.info('aaa')
+'''
