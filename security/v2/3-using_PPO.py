@@ -1,9 +1,9 @@
-from security_environment import SecurityEnvironment
+from dorothy_security_environment import SecurityEnvironment
 from stable_baselines3 import PPO
 import os
 
 
-MAX_TRAINING_STEPS = 2048
+MAX_TRAINING_STEPS = 128
 MODEL = f'PPO {MAX_TRAINING_STEPS} steps, default params, SB3'
 MODEL_FILE = MODEL.replace(',', '_').replace(' ', '_')
 
@@ -32,7 +32,7 @@ def test(model):
 
 # ---TRAIN---
 model = train()
-# model.save(MODEL_FILE)
+model.save(MODEL_FILE)
 
 # ---TEST---
 # dirname, filename = os.path.split(os.path.abspath(__file__))

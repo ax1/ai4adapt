@@ -15,8 +15,11 @@ from enum import Enum
 import numpy as np
 import requests
 from datetime import datetime
+import logging
+import re
 
 URL = 'http://localhost:8080/environment'
+LOGGER_ENABLED = False
 
 
 class REWARD(Enum):
@@ -24,15 +27,17 @@ class REWARD(Enum):
     WIN = 100           # Some defenses have blocked all the attacks, end with FULL success.
     SURVIVE = 0         # After a while, if the system is still UP, end with success (is resilient)
     DIE = -100          # The attack destroys successfully the system
-    USE_DEFENSE = -1    # The less weapons spent in defense, the better
-    TIME = 1            # While still alive (even if damaged) the resilience is rewarded
-    HEALTH = 1          # When system is still healthy an extra reward is given
+    USE_DEFENSE = -5    # The less weapons spent in defense, the better
+    TIME = 0            # While still alive (even if damaged) the resilience is rewarded
+    HEALTH = 0          # DO NOT USE, it give bad training results # When system is still healthy an extra reward is given
 
 
 class SecurityEnvironment(gym.Env):
 
-    def __init__(self, description=None):
+    def __init__(self, description='SecurityEnvironment'):
         super().__init__()
+        if (LOGGER_ENABLED):
+            self._init_logger(description)
         print2()
         print2('----------------------------------------------------------------------------------------')
         print2('                       INIT Security Environment')
@@ -51,8 +56,8 @@ class SecurityEnvironment(gym.Env):
         self.OBSERVATION_COMPROMISED = 1
         self.OBSERVATION_DAMAGED = 2
         self.OBSERVATION_RESOLVED = 3
-        self.MAX_STEPS = 100    # Our current attack is 48 steps
-        self.action_space = spaces.Discrete(12)
+        self.MAX_STEPS = 10   # Our current attack is 48 steps
+        self.action_space = spaces.Discrete(4)
         # Observations are [A,B,C] each with four states(0,1,2,3), where 0|3 are good and 1|2 are bad
         self.observation_space = spaces.Box(low=0, high=3, shape=(len(self.OBSERVATIONS),), dtype=np.uint8)
         self._reward = 0
@@ -70,10 +75,12 @@ class SecurityEnvironment(gym.Env):
         res = requests.delete(URL).json()
         obs, info = res.values()
         print2(f'{info}. Initial observation: {obs}')
-        return np.array(obs), self._normalize_info(info)
+        observation = np.array(obs)
+        self._result(-1, observation, self._reward, False, False, '')
+        return observation, self._normalize_info(info)
 
     def step(self, action):
-        action = 0
+        action = action + 7
         # print2(f'Executing action {action}-{self.action_desc(action)} ...')
         # Get all required data
         terminated = False
@@ -88,19 +95,12 @@ class SecurityEnvironment(gym.Env):
         self._update_reward(REWARD.TIME)
 
         # REWARD/PENALTY for action consumed
-        if action != 0:
+        if self.ACTIONS[action].get('name') != self.ACTIONS[0].get('name'):
             self._update_reward(REWARD.USE_DEFENSE)
 
         # REWARD based on observation, if not many damages, give a tip
         damages = np.count_nonzero(observation)
         self._update_reward(REWARD.HEALTH, len(observation) - damages)
-
-        # Check TRUNCATE episode (in this case is SUCCESS because the system is resilient to the attack)
-        if self._steps >= self.MAX_STEPS:
-            info = f'{REWARD.SURVIVE} (SUCCESS): The episode reached MAX_STEPS and the system is still ALIVE.'
-            self._update_reward(REWARD.SURVIVE)
-            truncated = True
-            return self._result(action, observation, self._reward, terminated, truncated, info)
 
         # Check TRUNCATE based on SUCCESS damage control [not all VMs were attacked]
         if self._is_success(observation):
@@ -109,9 +109,17 @@ class SecurityEnvironment(gym.Env):
             truncated = True
             return self._result(action, observation, self._reward, terminated, truncated, info)
 
-        # Check TERMINATE episode. In this case is FAILURE we terminate when all the system is down
-        if np.all(observation == self.OBSERVATION_DAMAGED):
-            info = f'{REWARD.DIE} (FAILURE): All the observations are critical damages. The system cannot be recovered.'
+        # Check TRUNCATE episode (in this case is SUCCESS because the system is resilient to the attack)
+        if self._steps >= self.MAX_STEPS:
+            info = f'{REWARD.SURVIVE} (SUCCESS): The episode reached MAX_STEPS and the system is still ALIVE.'
+            self._update_reward(REWARD.SURVIVE)
+            truncated = True
+            return self._result(action, observation, self._reward, terminated, truncated, info)
+
+        # Check TERMINATE episode. In this case is FAILURE we terminate when last target is dowm
+        # if np.all(observation == self.OBSERVATION_DAMAGED):
+        if observation[len(self.OBSERVATIONS) - 1] == self.OBSERVATION_DAMAGED:
+            info = f'{REWARD.DIE} (FAILURE): The last target was damaged.The system cannot recover'
             self._update_reward(REWARD.DIE)
             terminated = True
             return self._result(action, observation, self._reward, terminated, truncated, info)
@@ -132,19 +140,17 @@ class SecurityEnvironment(gym.Env):
     def _is_success(self, obs):
         '''
         If a target is 3 and the following ones are 0, the attack cannot develop anymore->SUCCESS
+        BE CAREFUL when modifying this function because it is CRITICAL for training
+        Note: Wizard cannot be considered 3=SUCCESS because already compromised
         '''
-        for r in range(len(obs)):
-            if obs[r] == 3:
-                remain = []
-                for s in range(r + 1, len(obs)):
-                    if obs[s] == 0 or obs[s] == 3:
-                        remain.append(obs[s])
-                if (len(remain) == len(obs) - r - 1):
-                    return True
+        if obs[1] == 3 and obs[2] == 0:
+            return True
+        elif obs[0] == 3 and obs[1] == 0 and obs[2] == 0:
+            return True
         return False
 
     def action_desc(self, action):
-        return f"{self.ACTIONS[action]['name']} on {self.ACTIONS[action]['target']}"
+        return 'Reset' if action == -1 else f"{self.ACTIONS[action]['name']} on {self.ACTIONS[action]['target']}"
 
     def _result(self, action, observation, reward, terminated, truncated, info):
         print2(f'{str(self._steps).ljust(2)}:', f'A{str(action).ljust(2)}', f'O{observation}',
@@ -154,6 +160,22 @@ class SecurityEnvironment(gym.Env):
     def _update_reward(self, reward_type, times=1):
         self._reward = self._reward + (reward_type.value) * times
 
+    def _init_logger(self, desc):
+        filename = f"{desc}_{re.sub(r'(-|:)*','',str(datetime.now().isoformat(timespec='seconds')))}.log"
+        FORMAT = '%(asctime)s %(message)s'
+        logging.basicConfig(filename=filename, filemode='w', format=FORMAT,
+                            level=logging.DEBUG, datefmt='%Y-%m-%dT%H:%M:%S')
+
 
 def print2(*args):
     print(f"{datetime.now().isoformat(timespec='seconds')} ", *args) if args else print()
+    # logging.info(*args) if (LOGGER_ENABLED) else None
+
+
+'''
+filename = f"desc_{re.sub(r'(-|:)*','',str(datetime.now().isoformat(timespec='seconds')))}.log"
+FORMAT = '%(asctime)s %(message)s'
+logging.basicConfig(filename=filename, filemode='a', format=FORMAT)
+logger = logging.getLogger('tcpserver')
+logger.info('aaa')
+'''
