@@ -18,7 +18,7 @@ from datetime import datetime
 import logging
 import re
 
-URL = 'http://localhost:8080/dummy_environment'
+URL = 'http://localhost:8080/environment'
 LOGGER_ENABLED = False
 
 
@@ -64,12 +64,6 @@ class SecurityEnvironment(gym.Env):
         self._steps = 0
         self._episodes = 0
 
-    def _init_logger(self, desc):
-        filename = f"{desc}_{re.sub(r'(-|:)*','',str(datetime.now().isoformat(timespec='seconds')))}.log"
-        FORMAT = '%(asctime)s %(message)s'
-        logging.basicConfig(filename=filename, filemode='w', format=FORMAT,
-                            level=logging.DEBUG, datefmt='%Y-%m-%dT%H:%M:%S')
-
     def reset(self, seed=None, options=None):
         super().reset(seed=seed, options=options)
         self._episodes += 1
@@ -80,10 +74,10 @@ class SecurityEnvironment(gym.Env):
         self._reward, self._steps = 0, 0
         res = requests.delete(URL).json()
         obs, info = res.values()
-        if obs[2] == 1:
-            print('reset')
         print2(f'{info}. Initial observation: {obs}')
-        return np.array(obs), self._normalize_info(info)
+        observation = np.array(obs)
+        self._result(-1, observation, self._reward, False, False, '')
+        return observation, self._normalize_info(info)
 
     def step(self, action):
         # print2(f'Executing action {action}-{self.action_desc(action)} ...')
@@ -100,24 +94,24 @@ class SecurityEnvironment(gym.Env):
         self._update_reward(REWARD.TIME)
 
         # REWARD/PENALTY for action consumed
-        if action != 0:
+        if self.ACTIONS[action].get('name') != self.ACTIONS[0].get('name'):
             self._update_reward(REWARD.USE_DEFENSE)
 
         # REWARD based on observation, if not many damages, give a tip
         damages = np.count_nonzero(observation)
         self._update_reward(REWARD.HEALTH, len(observation) - damages)
 
-        # Check TRUNCATE episode (in this case is SUCCESS because the system is resilient to the attack)
-        if self._steps >= self.MAX_STEPS:
-            info = f'{REWARD.SURVIVE} (SUCCESS): The episode reached MAX_STEPS and the system is still ALIVE.'
-            self._update_reward(REWARD.SURVIVE)
-            truncated = True
-            return self._result(action, observation, self._reward, terminated, truncated, info)
-
         # Check TRUNCATE based on SUCCESS damage control [not all VMs were attacked]
         if self._is_success(observation):
             info = f'{REWARD.WIN} (SUCCESS): The attack was stopped before damaging all the machines.'
             self._update_reward(REWARD.WIN)
+            truncated = True
+            return self._result(action, observation, self._reward, terminated, truncated, info)
+
+        # Check TRUNCATE max steps (in this case is SUCCESS because the system is resilient to the attack)
+        if self._steps >= self.MAX_STEPS:
+            info = f'{REWARD.SURVIVE} (SUCCESS): The episode reached MAX_STEPS and the system is still ALIVE.'
+            self._update_reward(REWARD.SURVIVE)
             truncated = True
             return self._result(action, observation, self._reward, terminated, truncated, info)
 
@@ -146,17 +140,16 @@ class SecurityEnvironment(gym.Env):
         '''
         If a target is 3 and the following ones are 0, the attack cannot develop anymore->SUCCESS
         BE CAREFUL when modifying this function because it is CRITICAL for training
+        Note: Wizard cannot be considered 3=SUCCESS because already compromised
         '''
-        if obs[2] == 3:
-            return True
-        elif obs[1] == 3 and obs[2] == 0:
+        if obs[1] == 3 and obs[2] == 0:
             return True
         elif obs[0] == 3 and obs[1] == 0 and obs[2] == 0:
             return True
         return False
 
     def action_desc(self, action):
-        return f"{self.ACTIONS[action]['name']} on {self.ACTIONS[action]['target']}"
+        return 'Reset' if action == -1 else f"{self.ACTIONS[action]['name']} on {self.ACTIONS[action]['target']}"
 
     def _result(self, action, observation, reward, terminated, truncated, info):
         print2(f'{str(self._steps).ljust(2)}:', f'A{str(action).ljust(2)}', f'O{observation}',
@@ -165,6 +158,12 @@ class SecurityEnvironment(gym.Env):
 
     def _update_reward(self, reward_type, times=1):
         self._reward = self._reward + (reward_type.value) * times
+
+    def _init_logger(self, desc):
+        filename = f"{desc}_{re.sub(r'(-|:)*','',str(datetime.now().isoformat(timespec='seconds')))}.log"
+        FORMAT = '%(asctime)s %(message)s'
+        logging.basicConfig(filename=filename, filemode='w', format=FORMAT,
+                            level=logging.DEBUG, datefmt='%Y-%m-%dT%H:%M:%S')
 
 
 def print2(*args):
