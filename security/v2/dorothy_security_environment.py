@@ -18,16 +18,15 @@ from datetime import datetime
 import logging
 import re
 
-URL = 'http://localhost:8080/environment'
+URL = 'http://localhost:8080/dummy_environment'
 LOGGER_ENABLED = False
 
 
 class REWARD(Enum):
-    # @@@@@ TODO NOW WE WILL HAVE ATOMIC 3 EG [0,3,0], SO GIFT ALSO AS PARTIAL WIN
     WIN = 100           # Some defenses have blocked all the attacks, end with FULL success.
     SURVIVE = 0         # After a while, if the system is still UP, end with success (is resilient)
     DIE = -100          # The attack destroys successfully the system
-    USE_DEFENSE = -5    # The less weapons spent in defense, the better
+    USE_DEFENSE = -10   # The less weapons spent in defense, the better
     TIME = 0            # While still alive (even if damaged) the resilience is rewarded
     HEALTH = 0          # DO NOT USE, it give bad training results # When system is still healthy an extra reward is given
 
@@ -57,7 +56,7 @@ class SecurityEnvironment(gym.Env):
         self.OBSERVATION_DAMAGED = 2
         self.OBSERVATION_RESOLVED = 3
         self.MAX_STEPS = 10   # Our current attack is 48 steps
-        self.action_space = spaces.Discrete(4)
+        self.action_space = spaces.Discrete(6)
         # Observations are [A,B,C] each with four states(0,1,2,3), where 0|3 are good and 1|2 are bad
         self.observation_space = spaces.Box(low=0, high=3, shape=(len(self.OBSERVATIONS),), dtype=np.uint8)
         self._reward = 0
@@ -80,7 +79,6 @@ class SecurityEnvironment(gym.Env):
         return observation, self._normalize_info(info)
 
     def step(self, action):
-        action = action + 7
         # print2(f'Executing action {action}-{self.action_desc(action)} ...')
         # Get all required data
         terminated = False
@@ -143,11 +141,7 @@ class SecurityEnvironment(gym.Env):
         BE CAREFUL when modifying this function because it is CRITICAL for training
         Note: Wizard cannot be considered 3=SUCCESS because already compromised
         '''
-        if obs[1] == 3 and obs[2] == 0:
-            return True
-        elif obs[0] == 3 and obs[1] == 0 and obs[2] == 0:
-            return True
-        return False
+        return True if obs[0] == 3 else False
 
     def action_desc(self, action):
         return 'Reset' if action == -1 else f"{self.ACTIONS[action]['name']} on {self.ACTIONS[action]['target']}"
