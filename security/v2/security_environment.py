@@ -27,10 +27,10 @@ class REWARD(Enum):
     WIN = 100           # Some defenses have blocked all the attacks, end with FULL success.
     SURVIVE = 0         # After a while, if the system is still UP, end with success (is resilient)
     DIE = -100          # The attack destroys successfully the system
-    USE_DEFENSE = -5    # The less weapons spent in defense, the better
+    USE_DEFENSE = -10    # The less weapons spent in defense, the better
     TIME = 0            # While still alive (even if damaged) the resilience is rewarded
     HEALTH = 0          # DO NOT USE, it give bad training results # When system is still healthy an extra reward is given
-
+    # BLANK = 10
 
 class SecurityEnvironment(gym.Env):
 
@@ -56,7 +56,7 @@ class SecurityEnvironment(gym.Env):
         self.OBSERVATION_COMPROMISED = 1
         self.OBSERVATION_DAMAGED = 2
         self.OBSERVATION_RESOLVED = 3
-        self.MAX_STEPS = 50   # Our current attack is 48 steps
+        self.MAX_STEPS = 40   # Our current attack is 51 steps , but last 11 steps are after attack (removing evidences)
         self.action_space = spaces.Discrete(len(self.ACTIONS))
         # Observations are [A,B,C] each with four states(0,1,2,3), where 0|3 are good and 1|2 are bad
         self.observation_space = spaces.Box(low=0, high=3, shape=(len(self.OBSERVATIONS),), dtype=np.uint8)
@@ -80,6 +80,8 @@ class SecurityEnvironment(gym.Env):
         return observation, self._normalize_info(info)
 
     def step(self, action):
+        # if action == 0:
+        #     self._update_reward(REWARD.BLANK)
         # print2(f'Executing action {action}-{self.action_desc(action)} ...')
         # Get all required data
         terminated = False
