@@ -56,7 +56,8 @@ class SecurityEnvironment(gym.Env):
         self.OBSERVATION_COMPROMISED = 1
         self.OBSERVATION_DAMAGED = 2
         self.OBSERVATION_RESOLVED = 3
-        self.MAX_STEPS = 40   # Our current attack is 51 steps , but last 11 steps are after attack (removing evidences)
+        # TODO @@@@@@@ Now, attack is much faster, we can reduce steps to consider invalid ending (currently 1 defense == 2 attacks in time)
+        self.MAX_STEPS = 20
         self.action_space = spaces.Discrete(len(self.ACTIONS))
         # Observations are [A,B,C] each with four states(0,1,2,3), where 0|3 are good and 1|2 are bad
         self.observation_space = spaces.Box(low=0, high=3, shape=(len(self.OBSERVATIONS),), dtype=np.uint8)

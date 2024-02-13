@@ -18,7 +18,7 @@ from datetime import datetime
 import logging
 import re
 
-URL = 'http://localhost:8080/dummy_environment'
+URL = 'http://localhost:8080/environment'
 LOGGER_ENABLED = False
 
 
@@ -56,7 +56,7 @@ class SecurityEnvironment(gym.Env):
         self.OBSERVATION_DAMAGED = 2
         self.OBSERVATION_RESOLVED = 3
         self.MAX_STEPS = 10   # Our current attack is 48 steps
-        self.action_space = spaces.Discrete(6)
+        self.action_space = spaces.Discrete(13)
         # Observations are [A,B,C] each with four states(0,1,2,3), where 0|3 are good and 1|2 are bad
         self.observation_space = spaces.Box(low=0, high=3, shape=(len(self.OBSERVATIONS),), dtype=np.uint8)
         self._reward = 0

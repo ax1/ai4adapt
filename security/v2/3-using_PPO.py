@@ -1,9 +1,10 @@
-from security_environment import SecurityEnvironment
+from dorothy_security_environment import SecurityEnvironment
 from stable_baselines3 import PPO
 import os
 
 
-MAX_TRAINING_STEPS = 512
+MAX_TRAINING_STEPS = 128
+TRAIN_SLOT = 128
 MODEL = f'PPO {MAX_TRAINING_STEPS} steps, default params, SB3'
 MODEL_FILE = MODEL.replace(',', '_').replace(' ', '_')
 
@@ -18,7 +19,7 @@ def train():
     https://stable-baselines3.readthedocs.io/en/master/modules/ppo.html
     https://spinningup.openai.com/en/latest/algorithms/ppo.html
     '''
-    model = PPO("MlpPolicy", SecurityEnvironment(MODEL_FILE), verbose=1, n_epochs=10, n_steps=512)
+    model = PPO("MlpPolicy", SecurityEnvironment(MODEL_FILE), verbose=1, n_epochs=10, n_steps=TRAIN_SLOT)
     model.learn(total_timesteps=MAX_TRAINING_STEPS, progress_bar=False)
     return model
 
