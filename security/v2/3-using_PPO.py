@@ -28,7 +28,7 @@ def test(model):
     print('\033[94m')
     vec_env = model.get_env()
     observations = vec_env.reset()
-    for r in range(50):
+    for r in range(20):
         '''
         Deterministic=true gives better results given same training steps.
         '''
