@@ -117,9 +117,8 @@ class SecurityEnvironment(gym.Env):
             truncated = True
             return self._result(action, observation, self._reward, terminated, truncated, info)
 
-        # Check TERMINATE episode. In this case is FAILURE we terminate when last target is dowm
-        # if np.all(observation == self.OBSERVATION_DAMAGED):
-        if observation[len(self.OBSERVATIONS) - 1] == self.OBSERVATION_DAMAGED:
+        # Check TERMINATE episode. TOTO damaged so DORO training was fail.
+        if observation[1] > 0:
             info = f'{REWARD.DIE} (FAILURE): The last target was damaged.The system cannot recover'
             self._update_reward(REWARD.DIE)
             terminated = True
