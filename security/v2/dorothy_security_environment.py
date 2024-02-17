@@ -29,6 +29,7 @@ class REWARD(Enum):
     USE_DEFENSE = -10   # The less weapons spent in defense, the better
     TIME = 0            # While still alive (even if damaged) the resilience is rewarded
     HEALTH = 0          # DO NOT USE, it give bad training results # When system is still healthy an extra reward is given
+    SAVE_BULLETS = 10   # Promote staying quiet and wait for the perfect timing for shooting
 
 
 class SecurityEnvironment(gym.Env):
@@ -55,7 +56,7 @@ class SecurityEnvironment(gym.Env):
         self.OBSERVATION_COMPROMISED = 1
         self.OBSERVATION_DAMAGED = 2
         self.OBSERVATION_RESOLVED = 3
-        self.MAX_STEPS = 10   # Our current attack is 48 steps
+        self.MAX_STEPS = 10   # Our current attack is 48 steps, for doro 10 is enough
         self.action_space = spaces.Discrete(13)
         # Observations are [A,B,C] each with four states(0,1,2,3), where 0|3 are good and 1|2 are bad
         self.observation_space = spaces.Box(low=0, high=3, shape=(len(self.OBSERVATIONS),), dtype=np.uint8)
@@ -93,7 +94,9 @@ class SecurityEnvironment(gym.Env):
         self._update_reward(REWARD.TIME)
 
         # REWARD/PENALTY for action consumed
-        if self.ACTIONS[action].get('name') != self.ACTIONS[0].get('name'):
+        if self.ACTIONS[action].get('name') == self.ACTIONS[0].get('name'):
+            self._update_reward(REWARD.SAVE_BULLETS)
+        else:
             self._update_reward(REWARD.USE_DEFENSE)
 
         # REWARD based on observation, if not many damages, give a tip

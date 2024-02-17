@@ -30,6 +30,7 @@ class REWARD(Enum):
     USE_DEFENSE = -10    # The less weapons spent in defense, the better
     TIME = 0            # While still alive (even if damaged) the resilience is rewarded
     HEALTH = 0          # DO NOT USE, it give bad training results # When system is still healthy an extra reward is given
+    SAVE_BULLETS = 10   # Defenses have already penalty, but gifting idle instead of zero girf increases a lot the chances of use idle
     # BLANK = 10
 
 class SecurityEnvironment(gym.Env):
@@ -97,7 +98,9 @@ class SecurityEnvironment(gym.Env):
         self._update_reward(REWARD.TIME)
 
         # REWARD/PENALTY for action consumed
-        if self.ACTIONS[action].get('name') != self.ACTIONS[0].get('name'):
+        if self.ACTIONS[action].get('name') == self.ACTIONS[0].get('name'):
+            self._update_reward(REWARD.SAVE_BULLETS)
+        else:
             self._update_reward(REWARD.USE_DEFENSE)
 
         # REWARD based on observation, if not many damages, give a tip
