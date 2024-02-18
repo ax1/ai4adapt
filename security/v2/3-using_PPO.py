@@ -27,15 +27,17 @@ def test(model):
     print('\033[94m')
     vec_env = model.get_env()
     observations = vec_env.reset()
-    for r in range(20):
+    counter_episodes = 0
+    while counter_episodes < 5:
         '''
         Deterministic=true gives better results given same training steps.
         '''
         actions, _states = model.predict(observations, deterministic=True)
         observations, rewards, dones, info = vec_env.step(actions)
-        # if dones:
-        # print(info)
-        # vec_env.reset()
+        if dones:
+            counter_episodes += 1
+            # print(info)
+            # vec_env.reset()
 
 
 # ---TRAIN---
