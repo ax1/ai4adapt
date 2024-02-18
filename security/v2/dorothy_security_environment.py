@@ -18,8 +18,10 @@ from datetime import datetime
 import logging
 import re
 
-URL = 'http://localhost:8080/environment'
+URL = 'http://localhost:8080/dummy_environment'
 LOGGER_ENABLED = False
+DOROTHY_ACTIONS = 13      # THe number of real actions related to machine1
+IDLE_ACTIONS_RATIO = 0.5  # Idle actions added to to the real ones to give more chances to learn do nothing when appropriate
 
 
 class REWARD(Enum):
@@ -29,8 +31,7 @@ class REWARD(Enum):
     USE_DEFENSE = -10   # The less weapons spent in defense, the better
     TIME = 0            # While still alive (even if damaged) the resilience is rewarded
     HEALTH = 0          # DO NOT USE, it give bad training results # When system is still healthy an extra reward is given
-    SAVE_BULLETS = 10   # Promote staying quiet and wait for the perfect timing for shooting
-
+    SAVE_BULLETS = 1   # Promote staying quiet and wait for the perfect timing for shooting
 
 class SecurityEnvironment(gym.Env):
 
@@ -57,7 +58,8 @@ class SecurityEnvironment(gym.Env):
         self.OBSERVATION_DAMAGED = 2
         self.OBSERVATION_RESOLVED = 3
         self.MAX_STEPS = 10   # Our current attack is 48 steps, for doro 10 is enough
-        self.action_space = spaces.Discrete(13)
+        # add 13 steps and little more do nothing to give more chances for learning wait
+        self.action_space = spaces.Discrete(int(DOROTHY_ACTIONS * (1 + IDLE_ACTIONS_RATIO)))
         # Observations are [A,B,C] each with four states(0,1,2,3), where 0|3 are good and 1|2 are bad
         self.observation_space = spaces.Box(low=0, high=3, shape=(len(self.OBSERVATIONS),), dtype=np.uint8)
         self._reward = 0
@@ -84,6 +86,8 @@ class SecurityEnvironment(gym.Env):
         # Get all required data
         terminated = False
         truncated = False
+        if action >= DOROTHY_ACTIONS:
+            action = 0
         info = ''
         self._steps += 1
         obs = requests.post(f'{URL}?action={action}').json()
@@ -146,7 +150,8 @@ class SecurityEnvironment(gym.Env):
         return True if obs[0] == 3 else False
 
     def action_desc(self, action):
-        return 'Reset' if action == -1 else f"{self.ACTIONS[action]['name']} on {self.ACTIONS[action]['target']}"
+        target = f"on {self.ACTIONS[action]['target']}" if action != 0 else ''
+        return 'Reset' if action == -1 else f"{self.ACTIONS[action]['name']} {target}"
 
     def _result(self, action, observation, reward, terminated, truncated, info):
         print2(f'{str(self._steps).ljust(2)}:', f'A{str(action).ljust(2)}', f'O{observation}',

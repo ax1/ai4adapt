@@ -20,6 +20,7 @@ import re
 
 URL = 'http://localhost:8080/environment'
 LOGGER_ENABLED = False
+IDLE_ACTIONS_RATIO = 0.3  # Idle actions added to to the real ones to give more chances to learn do nothing when appropriate
 
 
 class REWARD(Enum):
@@ -59,7 +60,8 @@ class SecurityEnvironment(gym.Env):
         self.OBSERVATION_RESOLVED = 3
         # TODO @@@@@@@ Now, attack is much faster, we can reduce steps to consider invalid ending (currently 1 defense == 2 attacks in time)
         self.MAX_STEPS = 20
-        self.action_space = spaces.Discrete(len(self.ACTIONS))
+        self.action_space = spaces.Discrete(
+            int(len(self.ACTIONS) * (1 + IDLE_ACTIONS_RATIO)))  # increase do nothing usage
         # Observations are [A,B,C] each with four states(0,1,2,3), where 0|3 are good and 1|2 are bad
         self.observation_space = spaces.Box(low=0, high=3, shape=(len(self.OBSERVATIONS),), dtype=np.uint8)
         self._reward = 0
@@ -88,6 +90,8 @@ class SecurityEnvironment(gym.Env):
         # Get all required data
         terminated = False
         truncated = False
+        if action >= len(self.ACTIONS):
+            action = 0
         info = ''
         self._steps += 1
         obs = requests.post(f'{URL}?action={action}').json()
@@ -155,7 +159,8 @@ class SecurityEnvironment(gym.Env):
         return False
 
     def action_desc(self, action):
-        return 'Reset' if action == -1 else f"{self.ACTIONS[action]['name']} on {self.ACTIONS[action]['target']}"
+        target = f"on {self.ACTIONS[action]['target']}" if action != 0 else ''
+        return 'Reset' if action == -1 else f"{self.ACTIONS[action]['name']} {target}"
 
     def _result(self, action, observation, reward, terminated, truncated, info):
         print2(f'{str(self._steps).ljust(2)}:', f'A{str(action).ljust(2)}', f'O{observation}',
