@@ -1,9 +1,9 @@
-from dorothy_security_environment import SecurityEnvironment
+from security_environment import SecurityEnvironment
 from stable_baselines3 import PPO
 import os
 
-MAX_TRAINING_STEPS = 256
-TRAIN_SLOT = 256
+MAX_TRAINING_STEPS = 1024
+TRAIN_SLOT = 512
 MODEL = f'PPO {MAX_TRAINING_STEPS} steps, default params, SB3'
 MODEL_FILE = MODEL.replace(',', '_').replace(' ', '_')
 

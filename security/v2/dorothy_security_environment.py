@@ -18,7 +18,7 @@ from datetime import datetime
 import logging
 import re
 
-URL = 'http://localhost:8080/dummy_environment'
+URL = 'http://localhost:8080/environment'
 LOGGER_ENABLED = False
 DOROTHY_ACTIONS = 13      # THe number of real actions related to machine1
 IDLE_ACTIONS_RATIO = 0.5  # Idle actions added to to the real ones to give more chances to learn do nothing when appropriate

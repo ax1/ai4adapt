@@ -20,18 +20,18 @@ import re
 
 URL = 'http://localhost:8080/environment'
 LOGGER_ENABLED = False
-IDLE_ACTIONS_RATIO = 0.3  # Idle actions added to to the real ones to give more chances to learn do nothing when appropriate
+IDLE_ACTIONS_RATIO = 0.3    # Idle actions added to to the real ones to give more chances to learn do nothing when appropriate
+MACHINES = 3                # Number of machines to train TODO implement in the future instead of having a separate file for dorothy
 
 
 class REWARD(Enum):
-    # @@@@@ TODO NOW WE WILL HAVE ATOMIC 3 EG [0,3,0], SO GIFT ALSO AS PARTIAL WIN
     WIN = 100           # Some defenses have blocked all the attacks, end with FULL success.
     SURVIVE = 0         # After a while, if the system is still UP, end with success (is resilient)
     DIE = -100          # The attack destroys successfully the system
-    USE_DEFENSE = -10    # The less weapons spent in defense, the better
+    USE_DEFENSE = -10   # The less weapons spent in defense, the better
     TIME = 0            # While still alive (even if damaged) the resilience is rewarded
     HEALTH = 0          # DO NOT USE, it give bad training results # When system is still healthy an extra reward is given
-    SAVE_BULLETS = 10   # Defenses have already penalty, but gifting idle instead of zero girf increases a lot the chances of use idle
+    SAVE_BULLETS = 1    # Defenses have already penalty, but gifting idle instead of zero reward increases a lot the chances of use idle
     # BLANK = 10
 
 class SecurityEnvironment(gym.Env):
