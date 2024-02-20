@@ -125,10 +125,10 @@ class SecurityEnvironment(gym.Env):
             truncated = True
             return self._result(action, observation, self._reward, terminated, truncated, info)
 
-        # Check TERMINATE episode. In this case is FAILURE we terminate when last target is dowm
+        # Check TERMINATE episode. In this case is FAILURE we terminate when last target is in unsafe state
         # if np.all(observation == self.OBSERVATION_DAMAGED):
-        if observation[len(self.OBSERVATIONS) - 1] == self.OBSERVATION_DAMAGED:
-            info = f'{REWARD.DIE} (FAILURE): The last target was damaged.The system cannot recover'
+        if observation[len(self.OBSERVATIONS) - 1] != self.OBSERVATION_NORMAL:
+            info = f'{REWARD.DIE} (FAILURE): The last target is not in normal state. The global system is not secure.'
             self._update_reward(REWARD.DIE)
             terminated = True
             return self._result(action, observation, self._reward, terminated, truncated, info)
