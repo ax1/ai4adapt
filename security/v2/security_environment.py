@@ -18,7 +18,7 @@ from datetime import datetime
 import logging
 import re
 
-URL = 'http://localhost:8080/environment'
+BASE_URL = 'http://localhost:8080/$TARGET/environment'
 LOGGER_ENABLED = False
 IDLE_ACTIONS_RATIO = 0.3    # Idle actions added to to the real ones to give more chances to learn do nothing when appropriate
 MACHINES = 3                # Number of machines to train TODO implement in the future instead of having a separate file for dorothy
@@ -40,12 +40,15 @@ class SecurityEnvironment(gym.Env):
         super().__init__()
         if (LOGGER_ENABLED):
             self._init_logger(description)
+        current_target = description[:3]
+        print(current_target)
+        self._URL = BASE_URL.replace('$TARGET', current_target)
         print2()
         print2('----------------------------------------------------------------------------------------')
         print2('                       INIT Security Environment')
         print2('----------------------------------------------------------------------------------------')
         print2(f'RL agent: {description}') if description else None
-        obj = requests.get(URL).json()
+        obj = requests.get(self._URL).json()
         rewards_desc = [f'{el.name}: {el.value}' for el in REWARD]
         self.ACTIONS = obj['actions']
         self.OBSERVATIONS = obj['observations']
@@ -76,7 +79,7 @@ class SecurityEnvironment(gym.Env):
         print2('A: Action, O: Observation, R: Reward')
         print2('(Waiting 4 or 5 minutes for infrastructure to start...)')
         self._reward, self._steps = 0, 0
-        res = requests.delete(URL).json()
+        res = requests.delete(self._URL).json()
         obs, info = res.values()
         print2(f'{info}. Initial observation: {obs}')
         observation = np.array(obs)
@@ -94,7 +97,7 @@ class SecurityEnvironment(gym.Env):
             action = 0
         info = ''
         self._steps += 1
-        obs = requests.post(f'{URL}?action={action}').json()
+        obs = requests.post(f'{self._URL}?action={action}').json()
         observation = np.array(obs)
         # observation = self.observation_space.sample()
 

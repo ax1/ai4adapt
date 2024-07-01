@@ -3,11 +3,15 @@ Start the agent in run mode (no training)
 
 The model name provided in the program input should have the same action_space and
 observation_space in the environment application.
+
 '''
 
 import sys
 if len(sys.argv) < 2:
-    print('Usage: python inference.py $model_name')
+    print("""
+          Usage: python inference.py $model_name
+            (where model name format is "$TARGET $ALGORITHM $PARAMS")
+          """)
     exit(1)
 
 
