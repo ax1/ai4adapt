@@ -27,3 +27,7 @@ pip install gymnasium[box2d]
 
 1- Apply into SecurityEnvironment example and verify
 2- Then apply into Lunar, the strategy could be not as efficient as other techniques, but at least, it should resolve the optimization problem. Otherwise, the newly-created strategy is not valid because it should work with any abstract environment (a sort algorithm is not dependent on the items to be sorted, isn't it?)
+
+## Inference
+- Use a trained model. Mandatory: the model name should start with the name of the TARGET system as 3 first characters
+- Use the files with name "inference"

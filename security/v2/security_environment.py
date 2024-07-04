@@ -36,18 +36,23 @@ class REWARD(Enum):
 
 class SecurityEnvironment(gym.Env):
 
-    def __init__(self, description='SecurityEnvironment'):
+    def __init__(self, name='SecurityEnvironment'):
+        '''
+        Start the environment. Note that the real env must be running.
+        Params:
+          name: [optional] the identifier of the model. Examples: 'MyEnv' or 'MyEnv_20K_3p_custom'
+        '''
         super().__init__()
         if (LOGGER_ENABLED):
-            self._init_logger(description)
-        current_target = description[:3]
+            self._init_logger(name)
+        current_target = name[:3]
         print(current_target)
         self._URL = BASE_URL.replace('$TARGET', current_target)
         print2()
         print2('----------------------------------------------------------------------------------------')
         print2('                       INIT Security Environment')
         print2('----------------------------------------------------------------------------------------')
-        print2(f'RL agent: {description}') if description else None
+        print2(f'RL agent: {name}') if name else None
         obj = requests.get(self._URL).json()
         rewards_desc = [f'{el.name}: {el.value}' for el in REWARD]
         self.ACTIONS = obj['actions']

@@ -1,5 +1,6 @@
 from security_environment import SecurityEnvironment
 from stable_baselines3 import PPO
+from stable_baselines3.common.callbacks import CheckpointCallback
 import os
 
 TARGET = 'HES'  # TARGET IMPORTANT !!! (3 characters)
@@ -9,8 +10,9 @@ TRAIN_SLOT = 512
 MODEL = f'{TARGET}, PPO {MAX_TRAINING_STEPS} steps, default params, SB3'
 MODEL_FILE = MODEL.replace(',', '_').replace(' ', '_')
 
+
 def train():
-    # lookout: PPO default block steps aways forced to 2048 blocks, override with n_steps
+    # Lookout: PPO default block steps aways forced to 2048 blocks, override with n_steps
     # model = PPO("MlpPolicy", SecurityEnvironment(), verbose=1, learning_rate=0.1, gamma=0.01)
     '''
     DO NOT REMOVE n_epochs, in SB3 default is 10 but for finding partial solutions faster, 50 this is giving
@@ -20,8 +22,14 @@ def train():
     https://stable-baselines3.readthedocs.io/en/master/modules/ppo.html
     https://spinningup.openai.com/en/latest/algorithms/ppo.html
     '''
+
+    # Save model from time to time https://stable-baselines3.readthedocs.io/en/master/guide/callbacks.html#checkpointcallback
+    save_callback = CheckpointCallback(save_freq=TRAIN_SLOT, save_path="./temp/",
+                                       save_replay_buffer=True, save_vecnormalize=True)
+
+    # Train the agent to defend the environment
     model = PPO("MlpPolicy", SecurityEnvironment(MODEL_FILE), verbose=1, n_epochs=50, n_steps=TRAIN_SLOT)
-    model.learn(total_timesteps=MAX_TRAINING_STEPS, progress_bar=False)
+    model.learn(total_timesteps=MAX_TRAINING_STEPS, progress_bar=False, callback=save_callback)
     return model
 
 
