@@ -27,15 +27,13 @@ dirname, filename = os.path.split(os.path.abspath(__file__))
 securityEnvironment = SecurityEnvironment(MODEL)
 
 # Tune max steps on recommendation mode
-securityEnvironment.MAX_STEPS = 1e6
+# securityEnvironment.MAX_STEPS = 1e6
 
 print(f'{dirname}/{MODEL_FILE}')
 model = PPO.load(f'{dirname}/{MODEL_FILE}', securityEnvironment)
 
 vec_env = model.get_env()
-observations = vec_env.reset()
-counter_episodes = 0
-
+observations = [securityEnvironment.execute(0)]  # reset, but do not modify last remote observation
 while True:
     '''
     Deterministic=true gives better results given same training steps.
@@ -43,8 +41,4 @@ while True:
     sleep(10)
     actions, _states = model.predict(observations, deterministic=True)
     print(f'AIADAPT RL agent: based on observations {observations[0]}, recommend executing action {actions[0]}')
-    observations, rewards, dones, info = vec_env.step(actions)
-    if dones:
-        counter_episodes += 1
-        # print(info)
-        # vec_env.reset()
+    observations = [securityEnvironment.execute(actions[0])]

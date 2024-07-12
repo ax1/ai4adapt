@@ -154,6 +154,13 @@ class SecurityEnvironment(gym.Env):
     def _normalize_info(self, info):
         return {'info': f'{info}'}
 
+    def execute(self, action):
+        '''
+        Handy function to call env step() in inference mode so we do not consume RL steps
+        '''
+        obs = requests.post(f'{self._URL}?action={action}').json()
+        return obs
+
     def _is_success(self, obs):
         '''
         If a target is 3 and the following ones are 0, the attack cannot develop anymore->SUCCESS
