@@ -33,7 +33,7 @@ print(f'{dirname}/{MODEL_FILE}')
 model = PPO.load(f'{dirname}/{MODEL_FILE}', securityEnvironment)
 
 vec_env = model.get_env()
-observations = [securityEnvironment.execute(0)]  # reset, but do not modify last remote observation
+observations = [securityEnvironment.execute(0)]  # Reset, but do not modify the observation at remote
 while True:
     '''
     Deterministic=true gives better results given same training steps.
