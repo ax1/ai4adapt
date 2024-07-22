@@ -106,16 +106,22 @@ class SecurityEnvironment(gym.Env):
         self._steps += 1
         obs = requests.post(f'{self._URL}?action={action}').json()
         observation = np.array(obs)
-        # observation = self.observation_space.sample()
+        action_expensive = self.ACTIONS[action].get('name') != self.ACTIONS[0].get('name')
+        was_damaged = self._is_damaged(self._last_observation)
+        is_damaged = self._is_damaged(observation)
 
         # REWARD by time/step keeping alive the system
         self._update_reward(REWARD.TIME)
 
         # REWARD/PENALTY for action consumed
-        if self.ACTIONS[action].get('name') == self.ACTIONS[0].get('name'):
-            self._update_reward(REWARD.SAVE_BULLETS)
-        else:
-            self._update_reward(REWARD.USE_DEFENSE)
+        #    Pay for action consumed
+        self._update_reward(REWARD.USE_DEFENSE) if action_expensive else None
+        #    Pay for inneficient action (can be disabled because efficient is success )
+        self._update_reward(REWARD.USE_DEFENSE) if action_expensive and is_damaged else None
+        #    Gain a tip on do nothing when system is ok (TODO: note that this uses a "previous" observation...)
+        self._update_reward(REWARD.SAVE_BULLETS) if not action_expensive and not was_damaged else None
+        #    But also pay for "loafing" instead of executing another defense, even a wrong one
+        self._update_reward(REWARD.USE_DEFENSE) if not action_expensive and was_damaged else None
 
         # REWARD based on observation, if not many damages, give a tip
         damages = np.count_nonzero(observation)
@@ -162,6 +168,15 @@ class SecurityEnvironment(gym.Env):
         '''
         obs = requests.post(f'{self._URL}?action={action}').json()
         return obs
+
+    def _is_damaged(self, obs):
+        '''
+        Check if system is considered as "damaged", or in bad state
+        '''
+        for item in obs:
+            if item != 0 and item != 3:
+                return True
+        return False
 
     def _is_success(self, obs):
         '''
