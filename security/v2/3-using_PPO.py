@@ -3,10 +3,11 @@ from stable_baselines3 import PPO
 from stable_baselines3.common.callbacks import CheckpointCallback
 import os
 
-TARGET = 'PPC'  # TARGET IMPORTANT !!! (3 characters)
+TARGET = 'HES'  # TARGET IMPORTANT !!! (3 characters)
 
-MAX_TRAINING_STEPS = 1024
-TRAIN_SLOT = 512
+
+MAX_TRAINING_STEPS = 2024
+TRAIN_SLOT = 16
 MODEL = f'{TARGET}, PPO {MAX_TRAINING_STEPS} steps, default params, SB3'
 MODEL_FILE = MODEL.replace(',', '_').replace(' ', '_')
 
@@ -28,7 +29,8 @@ def train():
                                        save_replay_buffer=True, save_vecnormalize=True)
 
     # Train the agent to defend the environment
-    model = PPO("MlpPolicy", SecurityEnvironment(MODEL_FILE), verbose=1, n_epochs=50, n_steps=TRAIN_SLOT)
+    model = PPO("MlpPolicy", SecurityEnvironment(MODEL_FILE),
+                verbose=1, n_epochs=50, n_steps=TRAIN_SLOT)
     model.learn(total_timesteps=MAX_TRAINING_STEPS, progress_bar=False, callback=save_callback)
     return model
 
