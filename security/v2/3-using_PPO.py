@@ -16,7 +16,7 @@ def train():
     # Lookout: PPO default block steps aways forced to 2048 blocks, override with n_steps
     # model = PPO("MlpPolicy", SecurityEnvironment(), verbose=1, learning_rate=0.1, gamma=0.01)
     '''
-    ON TRAINING PAY ATENTION to ep_rew_mean at rollout info (eg: our success is 100 less 1 defense so anywhere near 87-90 is good training)
+    ON TRAINING PAY ATTENTION to ep_rew_mean at rollout info (eg: our success is 100 less 1 defense so anywhere near 87-90 is good training)
 
     KEEP TRAIN_SLOT TO SMALL VALUES because in the real system we can spend time on updating policies and our episodes are short
 
@@ -34,7 +34,7 @@ def train():
 
     # Train the agent to defend the environment
     model = PPO("MlpPolicy", SecurityEnvironment(MODEL_FILE),
-                verbose=1, n_epochs=50, n_steps=TRAIN_SLOT)
+                verbose=1, n_epochs=50, n_steps=TRAIN_SLOT, batch_size=TRAIN_SLOT)
     model.learn(total_timesteps=MAX_TRAINING_STEPS, progress_bar=False, callback=save_callback)
     return model
 
