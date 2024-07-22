@@ -82,7 +82,7 @@ class SecurityEnvironment(gym.Env):
         self._episodes += 1
         print2()
         print2(f'RESET Security Environment (Episode {self._episodes})')
-        print2('A: Action, O: Observation, R: Reward')
+        print2('A: Action performed, Observation before -> Observation after, R: Episode reward so far')
         print2('(Waiting 4 or 5 minutes for infrastructure to start...)')
         self._reward, self._steps = 0, 0
         res = requests.delete(self._URL).json()
@@ -180,8 +180,9 @@ class SecurityEnvironment(gym.Env):
         return 'Reset' if action == -1 else f"{self.ACTIONS[action]['name']} {target}"
 
     def _result(self, action, observation, reward, terminated, truncated, info):
-        print2(f'{str(self._steps).ljust(2)}:', f'A{str(action).ljust(2)}', f'O{observation}',
+        print2(f'{str(self._steps).ljust(2)}:', f'A{str(action).ljust(2)}', f'{self._last_observation} -> {observation}',
                f'R{str(reward).ljust(3)}', self.action_desc(action), info)
+        self._last_observation = observation.copy()
         return observation, reward, terminated, truncated, self._normalize_info(info)
 
     def _update_reward(self, reward_type, times=1):
