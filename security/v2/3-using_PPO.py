@@ -40,7 +40,7 @@ def test(model):
     vec_env = model.get_env()
     observations = vec_env.reset()
     counter_episodes = 0
-    while counter_episodes < 5:
+    while counter_episodes < 20:
         '''
         Deterministic=true gives better results given same training steps.
         '''
