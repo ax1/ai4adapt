@@ -75,6 +75,7 @@ class SecurityEnvironment(gym.Env):
         self._reward = 0
         self._steps = 0
         self._episodes = 0
+        self._last_observation = None
 
     def reset(self, seed=None, options=None):
         super().reset(seed=seed, options=options)
@@ -88,6 +89,7 @@ class SecurityEnvironment(gym.Env):
         obs, info = res.values()
         print2(f'{info}. Initial observation: {obs}')
         observation = np.array(obs)
+        self._last_observation = np.array(obs)
         self._result(-1, observation, self._reward, False, False, '')
         return observation, self._normalize_info(info)
 
