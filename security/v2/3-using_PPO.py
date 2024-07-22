@@ -16,6 +16,10 @@ def train():
     # Lookout: PPO default block steps aways forced to 2048 blocks, override with n_steps
     # model = PPO("MlpPolicy", SecurityEnvironment(), verbose=1, learning_rate=0.1, gamma=0.01)
     '''
+    ON TRAINING PAY ATENTION to ep_rew_mean at rollout info (eg: our success is 100 less 1 defense so anywhere near 87-90 is good training)
+
+    KEEP TRAIN_SLOT TO SMALL VALUES because in the real system we can spend time on updating policies and our episodes are short
+
     DO NOT REMOVE n_epochs, in SB3 default is 10 but for finding partial solutions faster, 50 this is giving
     much better results than tweaking the learning_rate. Epochs increase the number of times that
     the policy is update during a slot of n_steps. Either increase epoch given many steps for finding the best
