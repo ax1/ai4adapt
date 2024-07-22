@@ -31,7 +31,7 @@ class REWARD(Enum):
     USE_DEFENSE = -10   # The less weapons spent in defense, the better
     TIME = 0            # While still alive (even if damaged) the resilience is rewarded
     HEALTH = 0          # DO NOT USE, it give bad training results # When system is still healthy an extra reward is given
-    SAVE_BULLETS = 1    # Defenses have already penalty, but gifting idle instead of zero reward increases a lot the chances of use idle
+    SAVE_BULLETS = 10   # Defenses have already penalty, but gifting idle instead of zero reward increases a lot the chances of use idle
     # BLANK = 10
 
 class SecurityEnvironment(gym.Env):
