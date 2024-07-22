@@ -18,9 +18,9 @@ from datetime import datetime
 import logging
 import re
 
-BASE_URL = 'http://localhost:8080/$TARGET/environment'
+BASE_URL = 'http://localhost:8080/$TARGET/dummy_environment'
 LOGGER_ENABLED = False
-IDLE_ACTIONS_RATIO = 0.3    # Idle actions added to to the real ones to give more chances to learn do nothing when appropriate
+IDLE_ACTIONS_RATIO = 0.0    # Idle actions added to to the real ones to give more chances to learn do nothing when appropriate
 MACHINES = 3                # Number of machines to train TODO implement in the future instead of having a separate file for dorothy
 
 
