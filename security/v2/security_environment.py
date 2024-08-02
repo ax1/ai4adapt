@@ -18,7 +18,7 @@ from datetime import datetime
 import logging
 import re
 
-BASE_URL = 'http://localhost:8080/$TARGET/dummy_environment'
+BASE_URL = 'http://localhost:8080/$TARGET/environment'
 LOGGER_ENABLED = False
 IDLE_ACTIONS_RATIO = 0.0    # Idle actions added to to the real ones to give more chances to learn do nothing when appropriate
 MACHINES = 3                # Number of machines to train TODO implement in the future instead of having a separate file for dorothy
@@ -82,7 +82,7 @@ class SecurityEnvironment(gym.Env):
         self._episodes += 1
         print2()
         print2(f'RESET Security Environment (Episode {self._episodes})')
-        print2('A: Action performed, Observation before -> Observation after, R: Episode reward so far')
+        print2('Format: Observation before, A: Action performed, Observation after, R: Episode reward so far')
         print2('(Waiting 4 or 5 minutes for infrastructure to start...)')
         self._reward, self._steps = 0, 0
         res = requests.delete(self._URL).json()
@@ -191,12 +191,13 @@ class SecurityEnvironment(gym.Env):
         return False
 
     def action_desc(self, action):
-        target = f"on {self.ACTIONS[action]['target']}" if action != 0 else ''
-        return 'Reset' if action == -1 else f"{self.ACTIONS[action]['name']} {target}"
+        name = self.ACTIONS[action]['name']
+        target = f"on {self.ACTIONS[action]['target']}" if "Do nothing" not in name else ''
+        return 'Reset' if action == -1 else f"{name} {target}"
 
     def _result(self, action, observation, reward, terminated, truncated, info):
-        print2(f'{str(self._steps).ljust(2)}:', f'A{str(action).ljust(2)}', f'{self._last_observation} -> {observation}',
-               f'R{str(reward).ljust(3)}', self.action_desc(action), info)
+        print2(f'{str(self._steps).ljust(2)}:', self._last_observation, f'A{str(action).ljust(2)}', observation,
+               f'R{str(reward).ljust(4)}', self.action_desc(action), info)
         self._last_observation = observation.copy()
         return observation, reward, terminated, truncated, self._normalize_info(info)
 
