@@ -6,9 +6,9 @@ import os
 TARGET = 'HES'  # TARGET IMPORTANT !!! (3 characters)
 
 
-MAX_TRAINING_STEPS = 2024
+MAX_TRAINING_STEPS = 4096
 TRAIN_SLOT = 16
-MODEL = f'{TARGET}, PPO {MAX_TRAINING_STEPS} steps, default params, SB3'
+MODEL = f'{TARGET}, PPO {MAX_TRAINING_STEPS} steps, slot {TRAIN_SLOT}, SB3'
 MODEL_FILE = MODEL.replace(',', '_').replace(' ', '_')
 
 
