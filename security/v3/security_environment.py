@@ -17,12 +17,13 @@ import requests
 from datetime import datetime
 import logging
 import re
+import dummy_environment as env
 
-BASE_URL = 'http://localhost:8080/$TARGET/dummy_environment'
+BASE_URL = 'http://localhost:8080/$TARGET/environment'
 LOGGER_ENABLED = False
 IDLE_ACTIONS_RATIO = 0.0    # Idle actions added to to the real ones to give more chances to learn do nothing when appropriate
 MACHINES = 3                # Number of machines to train TODO implement in the future instead of having a separate file for dorothy
-
+SIMULATE = True             # Use the internal simulated env
 
 class REWARD(Enum):
     WIN = 100           # Some defenses have blocked all the attacks, end with FULL success.
@@ -54,7 +55,7 @@ class SecurityEnvironment(gym.Env):
         print2('                       INIT Security Environment')
         print2('----------------------------------------------------------------------------------------')
         print2(f'RL agent: {name}') if name else None
-        obj = requests.get(self._URL).json()
+        obj = env.info() if SIMULATE else requests.get(self._URL).json()
         rewards_desc = [f'{el.name}: {el.value}' for el in REWARD]
         self.ACTIONS = obj['actions']
         self.OBSERVATIONS = obj['observations']
@@ -86,7 +87,7 @@ class SecurityEnvironment(gym.Env):
         print2('Format: Observation before, A: Action performed, Observation after, R: Episode reward so far')
         print2('(Waiting 4 or 5 minutes for infrastructure to start...)')
         self._reward, self._steps = 0, 0
-        res = requests.delete(self._URL).json()
+        res = env.reset() if SIMULATE else requests.delete(self._URL).json()
         obs, info = res.values()
         print2(f'{info}. Initial observation: {obs}')
         observation = np.array(obs)
@@ -107,7 +108,7 @@ class SecurityEnvironment(gym.Env):
             action = 0
         info = ''
         self._steps += 1
-        obs = requests.post(f'{self._URL}?action={action}').json()
+        obs = env.step(action) if SIMULATE else requests.post(f'{self._URL}?action={action}').json()
         observation = np.array(obs)
         action_expensive = self.ACTIONS[action].get('name') != self.ACTIONS[0].get('name')
         was_damaged = self._is_damaged(self._last_observation)
@@ -169,7 +170,7 @@ class SecurityEnvironment(gym.Env):
         '''
         Handy function to call env step() in inference mode so we do not consume RL steps
         '''
-        obs = requests.post(f'{self._URL}?action={action}').json()
+        obs = env.step(action) if SIMULATE else requests.post(f'{self._URL}?action={action}').json()
         return obs
 
     def _is_damaged(self, obs):
