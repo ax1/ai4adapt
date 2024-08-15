@@ -1,0 +1,2 @@
+- [ ] Test higher learning rate. Now that rewards are atomic, we can increase to ensure that good ones are learnt faster (in incremental there were a bunch of good ones depending of the episode because they were with the good one, but in this case, only the valid one is rewarded).
+- [ ] try sensitivity going back to default params. We do no need so many policy evaluations on each block with this atomic format.
