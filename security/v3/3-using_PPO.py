@@ -6,13 +6,14 @@ import os
 TARGET = 'HES'  # TARGET IMPORTANT !!! (3 characters)
 
 
-MAX_TRAINING_STEPS = 1024
+MAX_TRAINING_STEPS = 512
 TRAIN_SLOT = 16
 MODEL = f'{TARGET}, PPO {MAX_TRAINING_STEPS} steps, slot {TRAIN_SLOT}, SB3'
 MODEL_FILE = MODEL.replace(',', '_').replace(' ', '_')
 
 
 def train():
+
     # Lookout: PPO default block steps aways forced to 2048 blocks, override with n_steps
     # model = PPO("MlpPolicy", SecurityEnvironment(), verbose=1, learning_rate=0.1, gamma=0.01)
     '''
@@ -27,24 +28,24 @@ def train():
     https://stable-baselines3.readthedocs.io/en/master/modules/ppo.html
     https://spinningup.openai.com/en/latest/algorithms/ppo.html
     '''
-
+    print('\n---------------TRAIN MODEL--------------------')
     # Save model from time to time https://stable-baselines3.readthedocs.io/en/master/guide/callbacks.html#checkpointcallback
     save_callback = CheckpointCallback(save_freq=TRAIN_SLOT, save_path="./temp/",
                                        save_replay_buffer=True, save_vecnormalize=True)
 
     # Train the agent to defend the environment
     model = PPO("MlpPolicy", SecurityEnvironment(MODEL_FILE),
-                verbose=1, n_epochs=50, n_steps=TRAIN_SLOT, batch_size=TRAIN_SLOT)
+                verbose=1, n_epochs=50, n_steps=TRAIN_SLOT, batch_size=TRAIN_SLOT, learning_rate=0.01)
     model.learn(total_timesteps=MAX_TRAINING_STEPS, progress_bar=False, callback=save_callback)
     return model
 
 
 def test(model):
-    print('\033[94m')
+    print('\n---------------TEST MODEL--------------------')
     vec_env = model.get_env()
     observations = vec_env.reset()
     counter_episodes = 0
-    while counter_episodes < 20:
+    while counter_episodes < 10:
         '''
         Deterministic=true gives better results given same training steps.
         '''
