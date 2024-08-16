@@ -23,7 +23,7 @@ BASE_URL = 'http://localhost:8080/$TARGET/environment'
 LOGGER_ENABLED = False
 IDLE_ACTIONS_RATIO = 0.0    # Idle actions added to to the real ones to give more chances to learn do nothing when appropriate
 MACHINES = 3                # Number of machines to train TODO implement in the future instead of having a separate file for dorothy
-SIMULATE = True             # Use the internal simulated env
+
 
 class REWARD(Enum):
     WIN = 100           # Some defenses have blocked all the attacks, end with FULL success.
@@ -32,34 +32,41 @@ class REWARD(Enum):
     USE_DEFENSE = -10   # The less weapons spent in defense, the better
     TIME = 0            # While still alive (even if damaged) the resilience is rewarded
     HEALTH = 0          # DO NOT USE, it give bad training results # When system is still healthy an extra reward is given
-    SAVE_BULLETS = 10   # Defenses have already penalty, but gifting idle instead of zero reward increases a lot the chances of use idle
+    SAVE_BULLETS = 10   # Reward when the agent should not move (do-nothing action) because nothing to defend yet
     # BLANK = 10
 
 
 class SecurityEnvironment(gym.Env):
 
-    def __init__(self, name='SecurityEnvironment'):
+    def __init__(self, name='SecurityEnvironment', simulate=True, atomic=True):
         '''
         Start the environment. Note that the real env must be running.
         Params:
           name: [optional] the identifier of the model. Examples: 'MyEnv' or 'MyEnv_20K_3p_custom'
+          simulate: [optional] use the external environment or use internal simulator for tests
+          atomic: [optional] True, reward based on current step. False, sum previous rewards on each step.
+          (note: atomic finds faster the right action, while cumulative discards faster ineffective actions)
         '''
         super().__init__()
         if (LOGGER_ENABLED):
             self._init_logger(name)
         current_target = name[:3]
         print(current_target)
+        self._simulate = simulate
+        self._atomic = atomic
+
         self._URL = BASE_URL.replace('$TARGET', current_target)
         print2()
         print2('----------------------------------------------------------------------------------------')
         print2('                       INIT Security Environment')
         print2('----------------------------------------------------------------------------------------')
         print2(f'RL agent: {name}') if name else None
-        obj = env.info() if SIMULATE else requests.get(self._URL).json()
+        obj = env.info() if self._simulate else requests.get(self._URL).json()
         rewards_desc = [f'{el.name}: {el.value}' for el in REWARD]
         self.ACTIONS = obj['actions']
         self.OBSERVATIONS = obj['observations']
         actions_short = list(map(lambda el: f"{str(el['pos'])}-{el['name']} on {el['target']}", self.ACTIONS))
+        print2(f'Atomic: {atomic}')
         print2(f'Rewards (strategy): {rewards_desc}')
         print2(f'Observations (targets): {self.OBSERVATIONS}')
         print2(f'Actions (defenses): {actions_short}')
@@ -87,7 +94,7 @@ class SecurityEnvironment(gym.Env):
         print2('Format: Observation before, A: Action performed, Observation after, R: Episode reward so far')
         print2('(Waiting 4 or 5 minutes for infrastructure to start...)')
         self._reward, self._steps = 0, 0
-        res = env.reset() if SIMULATE else requests.delete(self._URL).json()
+        res = env.reset() if self._simulate else requests.delete(self._URL).json()
         obs, info = res.values()
         print2(f'{info}. Initial observation: {obs}')
         observation = np.array(obs)
@@ -96,19 +103,15 @@ class SecurityEnvironment(gym.Env):
         return observation, self._normalize_info(info)
 
     def step(self, action):
-        self._reward = 0  # Init reward on each step
-
-        # if action == 0:
-        #     self._update_reward(REWARD.BLANK)
-        # print2(f'Executing action {action}-{self.action_desc(action)} ...')
-        # Get all required data
+        # Initialize data
+        self._reward = 0 if self._atomic else None
         terminated = False
         truncated = False
         if action >= len(self.ACTIONS):
             action = 0
         info = ''
         self._steps += 1
-        obs = env.step(action) if SIMULATE else requests.post(f'{self._URL}?action={action}').json()
+        obs = env.step(action) if self._simulate else requests.post(f'{self._URL}?action={action}').json()
         observation = np.array(obs)
         action_expensive = self.ACTIONS[action].get('name') != self.ACTIONS[0].get('name')
         was_damaged = self._is_damaged(self._last_observation)
@@ -170,7 +173,7 @@ class SecurityEnvironment(gym.Env):
         '''
         Handy function to call env step() in inference mode so we do not consume RL steps
         '''
-        obs = env.step(action) if SIMULATE else requests.post(f'{self._URL}?action={action}').json()
+        obs = env.step(action) if self._simulate else requests.post(f'{self._URL}?action={action}').json()
         return obs
 
     def _is_damaged(self, obs):
