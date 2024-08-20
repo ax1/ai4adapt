@@ -36,7 +36,7 @@ class State:
 
     def _update(self, attacker, defender, solution):
         obs = self._obs
-        increment = self._attack % 3 == 0  # Increase damages from time to time
+        increment = self._attack % 5 == 0  # Increase damages from time to time
         if obs[defender] != 0 and solution:
             obs[defender] = 3
         if not increment:
@@ -301,7 +301,7 @@ def info():
 
 def reset():
     global STATE
-    STATE = State(0)
+    STATE = State()
     return {'observation': STATE.observe(0), 'info': 'Reset environment'}
 
 

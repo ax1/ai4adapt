@@ -6,7 +6,7 @@ import os
 TARGET = 'HES'  # TARGET IMPORTANT !!! (3 characters)
 
 
-MAX_TRAINING_STEPS = 512
+MAX_TRAINING_STEPS = 1024
 TRAIN_SLOT = 16
 MODEL = f'{TARGET}, PPO {MAX_TRAINING_STEPS} steps, slot {TRAIN_SLOT}, SB3'
 MODEL_FILE = MODEL.replace(',', '_').replace(' ', '_')
@@ -36,7 +36,7 @@ def train():
     # Train the agent to defend the environment
     securityEnvironment = SecurityEnvironment(MODEL_FILE, simulate=True, atomic=True)
     model = PPO("MlpPolicy", securityEnvironment,
-                verbose=1, n_epochs=50, n_steps=TRAIN_SLOT, batch_size=TRAIN_SLOT, learning_rate=0.01)
+                verbose=1, n_epochs=50, n_steps=TRAIN_SLOT, batch_size=TRAIN_SLOT, learning_rate=0.001)
     model.learn(total_timesteps=MAX_TRAINING_STEPS, progress_bar=False, callback=save_callback)
     return model
 
