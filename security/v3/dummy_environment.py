@@ -312,12 +312,12 @@ def step(action):
 # ----------------------------- MAIN ----------------------------
 
 if __name__ == "__main__":
-    # state = State(0)
-    # for r in range(40):
-    #     print('>>> ',state.observe(r + 14))
+    state = State(0)
+    for r in range(40):
+        print('>>> ', state.observe(r + 14))
 
-    state = State()
-    print('>>> ', state.observe(20))
+    # state = State()
+    # print('>>> ', state.observe(20))
 
     # print(info())
     # print(reset())
