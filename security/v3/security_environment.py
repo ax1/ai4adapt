@@ -76,7 +76,7 @@ class SecurityEnvironment(gym.Env):
         self.OBSERVATION_DAMAGED = 2
         self.OBSERVATION_RESOLVED = 3
         # TODO @@@@@@@ Now, attack is much faster, we can reduce steps to consider invalid ending (currently 1 defense == 2 attacks in time)
-        self.MAX_STEPS = 40
+        self.MAX_STEPS = 20
         self.action_space = spaces.Discrete(
             int(len(self.ACTIONS) * (1 + IDLE_ACTIONS_RATIO)))  # increase do nothing usage
         # Observations are [A,B,C] each with four states(0,1,2,3), where 0|3 are good and 1|2 are bad
