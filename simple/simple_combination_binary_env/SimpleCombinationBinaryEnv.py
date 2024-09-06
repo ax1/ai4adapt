@@ -21,6 +21,7 @@ class SimpleEnv(gym.Env):
     OBSERVATIONS = 10
     SOLUTION = [3, 7, 1]
     MAX_STEPS = 10
+    ATOMIC = False
 
     # REWARDS
     REWARD_ACTION = 1
@@ -54,6 +55,7 @@ class SimpleEnv(gym.Env):
         return self._observation, info
 
     def step(self, action):
+        self._reward = 0 if self.ATOMIC else self._reward
         terminated = False
         truncated = False
         self._steps += 1
