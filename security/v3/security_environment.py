@@ -120,6 +120,10 @@ class SecurityEnvironment(gym.Env):
         # REWARD by time/step keeping alive the system
         self._update_reward(REWARD.TIME)
 
+        # TODO ARF 15-11-24: some of these rewards are better if we use it another reward item in the enum
+        # because mentally it is easier to understand how we play with the rl by mainly lloking at the reward strategy
+        # and not to dig in the step() implementation to see how env and rewards behave
+
         # REWARD/PENALTY for action consumed
         #    Pay for action consumed
         self._update_reward(REWARD.USE_DEFENSE) if action_expensive else None
