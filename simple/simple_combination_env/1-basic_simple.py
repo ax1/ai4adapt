@@ -1,4 +1,4 @@
-from SimpleCombinationEnv import SimpleEnv
+from SimpleCombinationEnvOrdered import SimpleEnv
 import numpy as np
 
 env = SimpleEnv()
