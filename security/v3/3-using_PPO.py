@@ -37,6 +37,14 @@ def train():
     securityEnvironment = SecurityEnvironment(MODEL_FILE, simulate=SIMULATE, atomic=True)
     model = PPO("MlpPolicy", securityEnvironment,
                 verbose=1, n_epochs=50, n_steps=TRAIN_SLOT, batch_size=TRAIN_SLOT, learning_rate=0.001)
+
+    # Train it with most of the default options (only cap the ones related to train size)
+    # model = PPO("MlpPolicy", securityEnvironment, n_steps=TRAIN_SLOT)
+
+    # Try fostering dqn vs ppo but params ent_coef = 1 to foster exploration or vf coef to foster value results does not work with simulator so far
+    # model = PPO("MlpPolicy", securityEnvironment,
+    #            verbose=1, n_epochs=50, n_steps=TRAIN_SLOT, batch_size=TRAIN_SLOT, learning_rate=0.001, vf_coef=1, ent_coef=1)
+
     model.learn(total_timesteps=MAX_TRAINING_STEPS, progress_bar=False, callback=save_callback)
     return model
 
