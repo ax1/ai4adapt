@@ -104,7 +104,7 @@ class SecurityEnvironment(gym.Env):
 
     def step_old(self, action):
         '''
-        This version ends episode immediately when attack cannot advance to machine3 anymore 
+        This version ends episode immediately when attack cannot advance to machine3 anymore
         '''
         # Initialize data
         self._reward = 0 if self._atomic else None
@@ -170,7 +170,7 @@ class SecurityEnvironment(gym.Env):
         '''
         This version keeps the agent running even if attack was mitigated.
         This allows to learn to do-nothing not only when no attack, but after resolved.
-        Useful when agent is in recommendation mode, when attack seems resolved but respawns after a while. 
+        Useful when agent is in recommendation mode, when attack seems resolved but respawns after a while.
         '''
         # Initialize data
         self._reward = 0 if self._atomic else None
@@ -190,7 +190,7 @@ class SecurityEnvironment(gym.Env):
         self._update_reward(REWARD.TIME)
 
         # TODO ARF 15-11-24: some of these rewards are better if we use it another reward item in the enum
-        # because mentally it is easier to understand how we play with the rl by mainly lloking at the reward strategy
+        # because mentally it is easier to understand how we play with the rl by mainly looking at the reward strategy
         # and not to dig in the step() implementation to see how env and rewards behave
 
         # REWARD/PENALTY for action consumed
@@ -217,22 +217,26 @@ class SecurityEnvironment(gym.Env):
         # Check TRUNCATE max steps (in this case is SUCCESS because the system is resilient to the attack)
         if self._steps >= self.MAX_STEPS:
             if obs[-1] == 0:
-                info = f'{REWARD.WIN} (SUCCESS): The attack was stopped before damaging the final target machine.'
+                info = f'{REWARD.WIN} (SUCCESS): The attack was stopped before damaging the last target.'
                 self._update_reward(REWARD.WIN)
                 truncated = True
-            else:
+            elif obs[-1] == 3:
                 info = f'{REWARD.SURVIVE} (SURVIVE): The episode reached MAX_STEPS and the system is still ALIVE.'
                 self._update_reward(REWARD.SURVIVE)
+                truncated = True
+            else:
+                info = f'{REWARD.DIE} (FAILURE): The last target is not in normal state. The global system is not secure.'
+                self._update_reward(REWARD.DIE)
                 truncated = True
             return self._result(action, observation, self._reward, terminated, truncated, info)
 
         # Check TERMINATE episode. In this case is FAILURE we terminate when last target is in unsafe state
         # if np.all(observation == self.OBSERVATION_DAMAGED):
-        if observation[len(self.OBSERVATIONS) - 1] != self.OBSERVATION_NORMAL:
-            info = f'{REWARD.DIE} (FAILURE): The last target is not in normal state. The global system is not secure.'
-            self._update_reward(REWARD.DIE)
-            terminated = True
-            return self._result(action, observation, self._reward, terminated, truncated, info)
+        # if observation[len(self.OBSERVATIONS) - 1] != self.OBSERVATION_NORMAL:
+        #     info = f'{REWARD.DIE} (FAILURE): The last target is not in normal state. The global system is not secure.'
+        #     self._update_reward(REWARD.DIE)
+        #     terminated = True
+        #     return self._result(action, observation, self._reward, terminated, truncated, info)
 
         # If no truncated or terminated, send the new observation for the agent to proceed
         return self._result(action, observation, self._reward, terminated, truncated, info)
