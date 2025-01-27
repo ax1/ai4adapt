@@ -216,7 +216,7 @@ class SecurityEnvironment(gym.Env):
 
         # Check TRUNCATE max steps (in this case is SUCCESS because the system is resilient to the attack)
         if self._steps >= self.MAX_STEPS:
-            if not is_damaged(obs) and obs[-1] == 0:
+            if not self._is_damaged(obs) and obs[-1] == 0:
                 info = f'{REWARD.WIN} (SUCCESS): The attack was RESOLVED before damaging the last target.'
                 self._update_reward(REWARD.WIN)
                 truncated = True
@@ -225,7 +225,7 @@ class SecurityEnvironment(gym.Env):
                 self._update_reward(REWARD.SURVIVE)
                 truncated = True
             elif obs[-1] == 3:
-                info = f'{REWARD.SURVIVE} (SURVIVE): The last target is REPAIRED but the whole system should be audited.'
+                info = f'{REWARD.SURVIVE} (SURVIVE): The last target is REPAIRED or STOPPED but the whole system should be audited.'
                 self._update_reward(REWARD.SURVIVE)
                 truncated = True
             else:
