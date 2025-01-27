@@ -102,7 +102,10 @@ class SecurityEnvironment(gym.Env):
         self._result(-1, observation, self._reward, False, False, '')
         return observation, self._normalize_info(info)
 
-    def step(self, action):
+    def step_old(self, action):
+        '''
+        This version ends episode immediately when attack cannot advance to machine3 anymore 
+        '''
         # Initialize data
         self._reward = 0 if self._atomic else None
         terminated = False
@@ -150,6 +153,77 @@ class SecurityEnvironment(gym.Env):
             info = f'{REWARD.SURVIVE} (SUCCESS): The episode reached MAX_STEPS and the system is still ALIVE.'
             self._update_reward(REWARD.SURVIVE)
             truncated = True
+            return self._result(action, observation, self._reward, terminated, truncated, info)
+
+        # Check TERMINATE episode. In this case is FAILURE we terminate when last target is in unsafe state
+        # if np.all(observation == self.OBSERVATION_DAMAGED):
+        if observation[len(self.OBSERVATIONS) - 1] != self.OBSERVATION_NORMAL:
+            info = f'{REWARD.DIE} (FAILURE): The last target is not in normal state. The global system is not secure.'
+            self._update_reward(REWARD.DIE)
+            terminated = True
+            return self._result(action, observation, self._reward, terminated, truncated, info)
+
+        # If no truncated or terminated, send the new observation for the agent to proceed
+        return self._result(action, observation, self._reward, terminated, truncated, info)
+
+    def step(self, action):
+        '''
+        This version keeps the agent running even if attack was mitigated.
+        This allows to learn to do-nothing not only when no attack, but after resolved.
+        Useful when agent is in recommendation mode, when attack seems resolved but respawns after a while. 
+        '''
+        # Initialize data
+        self._reward = 0 if self._atomic else None
+        terminated = False
+        truncated = False
+        if action >= len(self.ACTIONS):
+            action = 0
+        info = ''
+        self._steps += 1
+        obs = env.step(action) if self._simulate else requests.post(f'{self._URL}?action={action}').json()
+        observation = np.array(obs)
+        action_expensive = self.ACTIONS[action].get('name') != self.ACTIONS[0].get('name')
+        was_damaged = self._is_damaged(self._last_observation)
+        is_damaged = self._is_damaged(observation)
+
+        # REWARD by time/step keeping alive the system
+        self._update_reward(REWARD.TIME)
+
+        # TODO ARF 15-11-24: some of these rewards are better if we use it another reward item in the enum
+        # because mentally it is easier to understand how we play with the rl by mainly lloking at the reward strategy
+        # and not to dig in the step() implementation to see how env and rewards behave
+
+        # REWARD/PENALTY for action consumed
+        #    Pay for action consumed
+        self._update_reward(REWARD.USE_DEFENSE) if action_expensive else None
+        #    Pay for inneficient action (can be disabled because efficient is success )
+        self._update_reward(REWARD.USE_DEFENSE) if action_expensive and is_damaged else None
+        #    Gain a tip on do nothing when system is ok (TODO: note that this uses a "previous" observation...)
+        self._update_reward(REWARD.SAVE_BULLETS) if not action_expensive and not was_damaged else None
+        #    But also pay for "loafing" instead of executing another defense, even a wrong one
+        self._update_reward(REWARD.USE_DEFENSE) if not action_expensive and was_damaged else None
+
+        # REWARD based on observation, if not many damages, give a tip
+        damages = np.count_nonzero(observation)
+        self._update_reward(REWARD.HEALTH, len(observation) - damages)
+
+        # Check TRUNCATE based on SUCCESS damage control [not all VMs were attacked]
+        # if self._is_success(observation):
+        #     info = f'{REWARD.WIN} (SUCCESS): The attack was stopped before damaging all the machines.'
+        #     self._update_reward(REWARD.WIN)
+        #     truncated = True
+        #     return self._result(action, observation, self._reward, terminated, truncated, info)
+
+        # Check TRUNCATE max steps (in this case is SUCCESS because the system is resilient to the attack)
+        if self._steps >= self.MAX_STEPS:
+            if obs[-1] == 0:
+                info = f'{REWARD.WIN} (SUCCESS): The attack was stopped before damaging the final target machine.'
+                self._update_reward(REWARD.WIN)
+                truncated = True
+            else:
+                info = f'{REWARD.SURVIVE} (SURVIVE): The episode reached MAX_STEPS and the system is still ALIVE.'
+                self._update_reward(REWARD.SURVIVE)
+                truncated = True
             return self._result(action, observation, self._reward, terminated, truncated, info)
 
         # Check TERMINATE episode. In this case is FAILURE we terminate when last target is in unsafe state
