@@ -9,7 +9,7 @@ SIMULATE = False
 
 MAX_TRAINING_STEPS = 1024
 TRAIN_SLOT = 16
-MODEL = f'{TARGET}, PPO {MAX_TRAINING_STEPS} steps, slot {TRAIN_SLOT}, SB3,{datetime.now().strftime("%Y%m%d%H%M%S")}'
+MODEL = f'{TARGET}, PPO {MAX_TRAINING_STEPS} steps, slot {TRAIN_SLOT}, SB3,{datetime.now().strftime("%Y%m%d_%H%M%S")}'
 MODEL_FILE = MODEL.replace(',', '_').replace(' ', '_')
 
 
