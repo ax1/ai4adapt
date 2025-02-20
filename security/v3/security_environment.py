@@ -102,7 +102,7 @@ class SecurityEnvironment(gym.Env):
         self._result(-1, observation, self._reward, False, False, '')
         return observation, self._normalize_info(info)
 
-    def step_old(self, action):
+    def step(self, action):
         '''
         This version ends episode immediately when attack cannot advance to machine3 anymore
         '''
@@ -145,7 +145,7 @@ class SecurityEnvironment(gym.Env):
         if self._is_success(observation):
             info = f'{REWARD.WIN} (SUCCESS): The attack was stopped before damaging all the machines.'
             self._update_reward(REWARD.WIN)
-            truncated = True
+            terminated = True
             return self._result(action, observation, self._reward, terminated, truncated, info)
 
         # Check TRUNCATE max steps (in this case is SUCCESS because the system is resilient to the attack)
@@ -166,7 +166,7 @@ class SecurityEnvironment(gym.Env):
         # If no truncated or terminated, send the new observation for the agent to proceed
         return self._result(action, observation, self._reward, terminated, truncated, info)
 
-    def step(self, action):
+    def step_until_end(self, action):
         '''
         This version keeps the agent running even if attack was mitigated.
         This allows to learn to do-nothing not only when no attack, but after resolved.
@@ -211,7 +211,7 @@ class SecurityEnvironment(gym.Env):
         # if self._is_success(observation):
         #     info = f'{REWARD.WIN} (SUCCESS): The attack was stopped before damaging all the machines.'
         #     self._update_reward(REWARD.WIN)
-        #     truncated = True
+        #     terminated = True
         #     return self._result(action, observation, self._reward, terminated, truncated, info)
 
         # Check TRUNCATE max steps (in this case is SUCCESS because the system is resilient to the attack)
@@ -219,15 +219,15 @@ class SecurityEnvironment(gym.Env):
             if not self._is_damaged(obs) and obs[-1] == 0:
                 info = f'{REWARD.WIN} (SUCCESS): The attack was RESOLVED before damaging the last target.'
                 self._update_reward(REWARD.WIN)
-                truncated = True
+                terminated = True
             elif obs[-1] == 0:
                 info = f'{REWARD.SURVIVE} (SURVIVE): The last target is still OK but other targets may be still damaged.'
                 self._update_reward(REWARD.SURVIVE)
-                truncated = True
+                terminated = True
             elif obs[-1] == 3:
                 info = f'{REWARD.SURVIVE} (SURVIVE): The last target is REPAIRED or STOPPED but the whole system should be audited.'
                 self._update_reward(REWARD.SURVIVE)
-                truncated = True
+                terminated = True
             else:
                 info = f'{REWARD.DIE} (FAILURE): The last target is DAMAGED. The global system is not secure.'
                 self._update_reward(REWARD.DIE)
