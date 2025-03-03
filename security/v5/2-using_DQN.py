@@ -8,14 +8,14 @@ TARGET = 'PPC'  # TARGET IMPORTANT !!! (3 characters)
 SIMULATE = True
 
 MAX_TRAINING_STEPS = 4048
-TRAIN_SLOT = 16
+TRAIN_SLOT = 64
 MODEL = f'{TARGET}, DQN {MAX_TRAINING_STEPS} steps, slot {TRAIN_SLOT}, SB3,{datetime.now().strftime("%Y%m%d_%H%M%S")}'
 MODEL_FILE = MODEL.replace(',', '_').replace(' ', '_')
 
 securityEnvironment = SecurityEnvironment(MODEL_FILE, simulate=SIMULATE, atomic=True)
-model = DQN("MlpPolicy", securityEnvironment, verbose=1, learning_rate=0.001,
-            target_update_interval=100, batch_size=TRAIN_SLOT)
-# model = DQN("MlpPolicy", securityEnvironment, verbose=1)
+# model = DQN("MlpPolicy", securityEnvironment, verbose=1, learning_rate=0.001,
+#             target_update_interval=100, batch_size=TRAIN_SLOT)
+model = DQN("MlpPolicy", securityEnvironment, verbose=1)
 model.learn(total_timesteps=MAX_TRAINING_STEPS, progress_bar=True)
 # model = DQN("MlpPolicy", custom_env, verbose=1, policy_kwargs=dict(net_arch=[16]), learning_rate=0.001, buffer_size=100, batch_size=8)
 # model = DQN("MlpPolicy", custom_env, verbose=1, learning_rate=0.001,
