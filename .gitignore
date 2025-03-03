@@ -5,6 +5,7 @@ __pycache__
 *.tar.*
 *.xz
 *.log
+log.txt
 private
 .venv
 TODOS_PRIVATE.md

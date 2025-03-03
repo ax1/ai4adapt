@@ -25,7 +25,7 @@ class State:
             seed = round(random.random() * 20)
         for _ in range(seed):
             self.observe(0)
-        self._lock = True
+        # self._lock = True  # Enable to emulate STATIC fixed env
 
     def observe(self, action):
         # if (self._obs[1] == 2 and self._obs[2] == 1):
