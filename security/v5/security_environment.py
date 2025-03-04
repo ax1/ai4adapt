@@ -29,11 +29,11 @@ class REWARD(Enum):
     WIN = 100           # Some defenses have blocked all the attacks, end with FULL success.
     SURVIVE = 0         # After a while, if the system is still UP, end with success (is resilient)
     DIE = -100          # The attack destroys successfully the system
-    USE_DEFENSE = -1   # The less weapons spent in defense, the better
+    USE_DEFENSE = -10   # The less weapons spent in defense, the better
     TIME = 0            # While still alive (even if damaged) the resilience is rewarded
     HEALTH = 0          # DO NOT USE, it give bad training results # When system is still healthy an extra reward is given
-    SAVE_BULLETS = 1   # Reward when the agent should not move (do-nothing action) because nothing to defend yet
-    VALID_DEFENSE = 10
+    SAVE_BULLETS = 10   # Reward when the agent should not move (do-nothing action) because nothing to defend yet
+    VALID_DEFENSE = 10  # Reward for a given weapon when the environment was at a certain state
     # BLANK = 10
 
 
@@ -77,7 +77,7 @@ class SecurityEnvironment(gym.Env):
         self.OBSERVATION_DAMAGED = 2
         self.OBSERVATION_RESOLVED = 3
         # TODO @@@@@@@ Now, attack is much faster, we can reduce steps to consider invalid ending (currently 1 defense == 2 attacks in time)
-        self.MAX_STEPS = 10
+        self.MAX_STEPS = 20
         self.action_space = spaces.Discrete(
             int(len(self.ACTIONS) * (1 + IDLE_ACTIONS_RATIO)))  # increase do nothing usage
         # Observations are [A,B,C] each with four states(0,1,2,3), where 0|3 are good and 1|2 are bad
@@ -108,6 +108,7 @@ class SecurityEnvironment(gym.Env):
         self._reward = 0 if self._atomic else None
         terminated = False
         truncated = False
+        action = 0 if action >= len(self.ACTIONS) else action
         info = ''
         self._steps += 1
         obs = env.step(action)
@@ -116,12 +117,15 @@ class SecurityEnvironment(gym.Env):
         was_damaged = self._is_damaged(self._last_observation)
         is_damaged = self._is_damaged(observation)
 
+        #  Reward no-action in normal state
+        self._update_reward(REWARD.SAVE_BULLETS) if not action_expensive and not was_damaged else None
+
         # Reward good defense
         if np.count_nonzero(observation == 3) > np.count_nonzero(self._last_observation == 3):
             self._update_reward(REWARD.VALID_DEFENSE)
 
         # Penalty on action consumed
-        self._update_reward(REWARD.USE_DEFENSE)
+        self._update_reward(REWARD.USE_DEFENSE) if action_expensive else None
 
         # @@@@@@@@@@@@ ARF use truncated for win and die, even if terminate is the right one, because:
         # - sb3 does not handle terminate as stated in gym documentation, this generates much worse training experience
@@ -134,7 +138,7 @@ class SecurityEnvironment(gym.Env):
         if self._is_success(observation):
             info = f'{REWARD.WIN} (SUCCESS): The attack was stopped before damaging all the machines.'
             self._update_reward(REWARD.WIN)
-            truncated = True
+            terminated = True
             return self._result(action, observation, self._reward, terminated, truncated, info)
 
         # Check TRUNCATE max steps (in this case is SUCCESS because the system is resilient to the attack)
@@ -149,7 +153,7 @@ class SecurityEnvironment(gym.Env):
         if observation[len(self.OBSERVATIONS) - 1] != self.OBSERVATION_NORMAL:
             info = f'{REWARD.DIE} (FAILURE): The last target is not in normal state. The global system is not secure.'
             self._update_reward(REWARD.DIE)
-            truncated = True
+            terminated = True
             return self._result(action, observation, self._reward, terminated, truncated, info)
 
         # If no truncated or terminated, send the new observation for the agent to proceed
