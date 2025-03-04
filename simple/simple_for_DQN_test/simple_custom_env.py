@@ -32,8 +32,12 @@ class SimpleCustomEnv(gym.Env):
         reward = -1 if self.state < last else 1
         if self.state == 4:
             reward = 10
+            # This is the expected from docs, terminate to mark the leaf nodes
             terminated = True
             truncated = False
+            # but in SB3 there is some hidden error because if good reward strategy, truncate converges better
+            # terminated = False
+            # truncated = True
         else:
             terminated = False
             truncated = False

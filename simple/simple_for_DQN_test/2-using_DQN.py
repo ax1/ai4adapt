@@ -15,7 +15,7 @@ custom_env = SimpleCustomEnv()
 # this helps:  exploration_final_eps=1 but it is better to force train every n episodes train_freq=(5, 'episode')
 model = DQN("MlpPolicy", custom_env, verbose=1, exploration_final_eps=1)
 # model = DQN("MlpPolicy", custom_env, verbose=1)
-model.learn(total_timesteps=512, progress_bar=False)
+model.learn(total_timesteps=128, progress_bar=False)
 
 # mean_reward, std_reward = evaluate_policy(model, model.get_env(), n_eval_episodes=2)
 # print(f"Mean reward: {mean_reward}, Std reward: {std_reward}")
