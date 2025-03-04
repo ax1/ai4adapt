@@ -63,7 +63,7 @@ class SecurityEnvironment(gym.Env):
         print2('----------------------------------------------------------------------------------------')
         print2(f'RL agent: {name}') if name else None
         obj = env.info() if self._simulate else requests.get(self._URL).json()
-        rewards_desc = [f'{el.name}: {el.value}' for el in REWARD]
+        rewards_desc = [f'{name}: {member.value}' for name, member in REWARD.__members__.items()]
         self.ACTIONS = obj['actions']
         self.OBSERVATIONS = obj['observations']
         actions_short = list(map(lambda el: f"{str(el['pos'])}-{el['name']} on {el['target']}", self.ACTIONS))
