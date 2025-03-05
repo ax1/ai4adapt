@@ -37,7 +37,7 @@ def train():
     # Train the agent to defend the environment
     securityEnvironment = SecurityEnvironment(MODEL_FILE, simulate=SIMULATE, atomic=True)
     model = PPO("MlpPolicy", securityEnvironment,
-                verbose=1, n_epochs=50, n_steps=TRAIN_SLOT, batch_size=TRAIN_SLOT, learning_rate=0.001)
+                verbose=1, n_epochs=50, n_steps=TRAIN_SLOT, batch_size=TRAIN_SLOT, learning_rate=0.001, vf_coef=0)
 
     # Train it with most of the default options (only cap the ones related to train size)
     # model = PPO("MlpPolicy", securityEnvironment, verbose=1)
@@ -48,7 +48,6 @@ def train():
 
     # Print raw parameters info
     print(model.__dict__)
-
     model.learn(total_timesteps=MAX_TRAINING_STEPS, progress_bar=False, callback=save_callback)
     return model
 
@@ -60,7 +59,8 @@ def test(model):
     counter_episodes = 0
     while counter_episodes < 20:
         '''
-        Deterministic=true gives better results given same training steps.
+        Deterministic=True gives better results given same training steps and also detects if not fully trained.
+        Deterministic=False in agent continuous mode, to give primary and alternative actions to resolve a state.
         '''
         actions, _states = model.predict(observations, deterministic=True)
         observations, rewards, dones, info = vec_env.step(actions)
