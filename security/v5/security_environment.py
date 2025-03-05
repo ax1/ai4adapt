@@ -33,7 +33,7 @@ class REWARD(Enum):
     TIME = 0            # While still alive (even if damaged) the resilience is rewarded
     HEALTH = 0          # DO NOT USE, it give bad training results # When system is still healthy an extra reward is given
     SAVE_BULLETS = 10   # Reward when the agent should not move (do-nothing action) because nothing to defend yet
-    VALID_DEFENSE = 10  # Reward for a given weapon when the environment was at a certain state
+    VALID_DEFENSE = 20  # Reward for a given weapon when the environment was at a certain state (higher than penalty)
     # BLANK = 10
 
 
@@ -117,28 +117,19 @@ class SecurityEnvironment(gym.Env):
         was_damaged = self._is_damaged(self._last_observation)
         is_damaged = self._is_damaged(observation)
 
-        #  Reward no-action in normal state
-        self._update_reward(REWARD.SAVE_BULLETS) if not action_expensive and not was_damaged else None
+        #  Reward no-action in normal state, penalty if no-action when damaged or if the action is expensive
+        self._update_reward(REWARD.SAVE_BULLETS) if not action_expensive and not was_damaged else self._update_reward(
+            REWARD.USE_DEFENSE)
 
-        # Reward good defense
+        # Reward good defense. Note this val should be higher than penalty to promote good defenses
         if np.count_nonzero(observation == 3) > np.count_nonzero(self._last_observation == 3):
             self._update_reward(REWARD.VALID_DEFENSE)
-
-        # Penalty on action consumed
-        self._update_reward(REWARD.USE_DEFENSE) if action_expensive else None
-
-        # @@@@@@@@@@@@ ARF use truncated for win and die, even if terminate is the right one, because:
-        # - sb3 does not handle terminate as stated in gym documentation, this generates much worse training experience
-        # - the fix is to truncate because we are already adding a reward to the defense
-        # - another fix is to go 1 step more with any action, if the last _observation was 3xx we can terminate because the good action was previously inserted in the neural network
-        # - and, as side effect, maybe we could train that last one as do-nothing...
-        # @@@@@@@@@@@@
 
         # Check TERMINATE based on SUCCESS damage control [not all VMs were attacked]
         if self._is_success(observation):
             info = f'{REWARD.WIN} (SUCCESS): The attack was stopped before damaging all the machines.'
             self._update_reward(REWARD.WIN)
-            terminated = True
+            terminated = True  # Set to truncate=True when we just need atomic efficiency of defenses
             return self._result(action, observation, self._reward, terminated, truncated, info)
 
         # Check TRUNCATE max steps (in this case is SUCCESS because the system is resilient to the attack)
@@ -153,7 +144,7 @@ class SecurityEnvironment(gym.Env):
         if observation[len(self.OBSERVATIONS) - 1] != self.OBSERVATION_NORMAL:
             info = f'{REWARD.DIE} (FAILURE): The last target is not in normal state. The global system is not secure.'
             self._update_reward(REWARD.DIE)
-            terminated = True
+            terminated = True  # Set to truncate=True when we just need atomic efficiency of defenses
             return self._result(action, observation, self._reward, terminated, truncated, info)
 
         # If no truncated or terminated, send the new observation for the agent to proceed
