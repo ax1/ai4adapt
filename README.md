@@ -7,6 +7,10 @@ Reinforcement Learning (RL) for security defences optimization.
 > DEV status: check inside example files depending on the wanted lib for more installation instructions.
 
 ```sh
+# Optional, create a virtual env
+python -m venv .venv
+source ./.venv/bin/activate
+
 # aiohttp only required to use security_env_proxy. For Python 3.10+ asiyncio is built-in 
 # gymnasium[box2d] is optional (install only box2d to use the sample envs), if so, swig is also required
 pip install swig gymnasium[box2d] aiohttp stable-baselines3[extra]
