@@ -111,7 +111,7 @@ class SecurityEnvironment(gym.Env):
         action = 0 if action >= len(self.ACTIONS) else action
         info = ''
         self._steps += 1
-        obs = env.step(action)
+        obs = env.step(action) if self._simulate else requests.post(f'{self._URL}?action={action}').json()
         observation = np.array(obs)
         action_expensive = self.ACTIONS[action].get('name') != self.ACTIONS[0].get('name')
         was_damaged = self._is_damaged(self._last_observation)

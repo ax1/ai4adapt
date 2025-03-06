@@ -5,7 +5,7 @@ from stable_baselines3.common.callbacks import CheckpointCallback
 import os
 
 TARGET = 'PPC'  # TARGET IMPORTANT !!! (3 characters)
-SIMULATE = True
+SIMULATE = False
 
 MAX_TRAINING_STEPS = 1024
 TRAIN_SLOT = 16
