@@ -24,7 +24,7 @@ import os
 MODEL = sys.argv[1]
 MODEL_FILE = MODEL.replace(',', '_').replace(' ', '_')
 dirname, filename = os.path.split(os.path.abspath(__file__))
-securityEnvironment = SecurityEnvironment(MODEL)
+securityEnvironment = SecurityEnvironment(MODEL, simulate=False)
 
 # Tune max steps on recommendation mode
 # securityEnvironment.MAX_STEPS = 1e6

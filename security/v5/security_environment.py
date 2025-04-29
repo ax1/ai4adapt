@@ -92,7 +92,7 @@ class SecurityEnvironment(gym.Env):
         self._episodes += 1
         print2()
         print2(f'RESET Security Environment (Episode {self._episodes})')
-        print2('Format: Observation before, A: Action performed, Observation after, R: Episode reward so far')
+        print2('Format: Observation before, A: Action performed, Observation after, R: Reward/Penalty')
         print2('(Waiting 4 or 5 minutes for infrastructure to start...)')
         self._reward, self._steps = 0, 0
         res = env.reset() if self._simulate else requests.delete(self._URL).json()
