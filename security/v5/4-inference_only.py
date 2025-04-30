@@ -17,11 +17,12 @@ if len(sys.argv) < 2:
 
 
 from security_environment import SecurityEnvironment
-from stable_baselines3 import PPO
+from stable_baselines3 import PPO, DQN
 import os
 
 
 MODEL = sys.argv[1]
+print(MODEL)
 MODEL_FILE = MODEL.replace(',', '_').replace(' ', '_')
 dirname, filename = os.path.split(os.path.abspath(__file__))
 securityEnvironment = SecurityEnvironment(MODEL, simulate=False)
@@ -30,7 +31,11 @@ securityEnvironment = SecurityEnvironment(MODEL, simulate=False)
 # securityEnvironment.MAX_STEPS = 1e6
 
 print(f'{dirname}/{MODEL_FILE}')
-model = PPO.load(f'{dirname}/{MODEL_FILE}', securityEnvironment)
+if ('DQN' in MODEL_FILE):
+    # DQN.load(..., custom_objects = {"optimizer": None,"optimizer_state_dict": None})
+    model = DQN.load(f'{dirname}/{MODEL_FILE}', securityEnvironment)
+else:
+    model = PPO.load(f'{dirname}/{MODEL_FILE}', securityEnvironment)
 
 vec_env = model.get_env()
 observations = [securityEnvironment.execute(0)]  # Reset, but do not modify the observation at remote
