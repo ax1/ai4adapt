@@ -7,6 +7,7 @@ observation_space in the environment application.
 '''
 import sys
 from time import sleep
+import numpy as np
 
 if len(sys.argv) < 2:
     print("""
@@ -38,7 +39,7 @@ else:
     model = PPO.load(f'{dirname}/{MODEL_FILE}', securityEnvironment)
 
 vec_env = model.get_env()
-observations = [securityEnvironment.execute(0)]  # Reset, but do not modify the observation at remote
+observations = np.array([securityEnvironment.execute(0)])  # Reset, but do not modify the observation at remote
 while True:
     '''
     Deterministic=true gives better results given same training steps.
@@ -46,4 +47,4 @@ while True:
     sleep(10)
     actions, _states = model.predict(observations, deterministic=False)
     print(f'AIADAPT RL agent: based on observations {observations[0]}, recommend executing action {actions[0]}')
-    observations = [securityEnvironment.execute(actions[0])]
+    observations = np.array([securityEnvironment.execute(0)])
