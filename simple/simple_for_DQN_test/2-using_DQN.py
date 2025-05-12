@@ -12,19 +12,21 @@ from simple_custom_env import SimpleCustomEnv
 
 custom_env = SimpleCustomEnv()
 
-# this helps:  exploration_final_eps=1 but it is better to force train every n episodes train_freq=(5, 'episode')
-model = DQN("MlpPolicy", custom_env, verbose=1, exploration_final_eps=1)
-# model = DQN("MlpPolicy", custom_env, verbose=1)
-model.learn(total_timesteps=128, progress_bar=False)
+# this helps: exploration_final_eps=1 but it is better to force train every n episodes train_freq=(5, 'episode')
+# in general you do not want random exploration at the final episodes, so use it only when you do not have enough episodes to train or whe the q-table size would be small.
+# It is better to tune the LEARNING RATE as first option
+# model = DQN("MlpPolicy", custom_env, verbose=1, learning_starts=32, exploration_final_eps=1)
+model = DQN("MlpPolicy", custom_env, verbose=1, learning_starts=32, learning_rate=0.01)
+model.learn(total_timesteps=64, progress_bar=False)
 
 # mean_reward, std_reward = evaluate_policy(model, model.get_env(), n_eval_episodes=2)
 # print(f"Mean reward: {mean_reward}, Std reward: {std_reward}")
 
 vec_env = model.get_env()
 obs = vec_env.reset()
-steps = 0
-while (steps < 40):
-    steps += 1
+step = 0
+while (step < 40):
+    step += 1
     action, _states = model.predict(obs, deterministic=True)
     obs, rewards, dones, info = vec_env.step(action)
-    print('action', action, 'obs', obs, 'reward', rewards, 'dones', dones)
+    print('step', step, 'action', action, 'obs', obs, 'reward', rewards, 'dones', dones)
