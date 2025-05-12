@@ -26,15 +26,28 @@ MACHINES = 3                # Number of machines to train TODO implement in the 
 
 
 class REWARD(Enum):
+    '''Price of atomic reward is higher vs terminal state, so faster convergence'''
     WIN = 100           # Some defenses have blocked all the attacks, end with FULL success.
     SURVIVE = 0         # After a while, if the system is still UP, end with success (is resilient)
     DIE = -100          # The attack destroys successfully the system
-    USE_DEFENSE = -10   # The less weapons spent in defense, the better
+    USE_DEFENSE = -50   # The less weapons spent in defense, the better
     TIME = 0            # While still alive (even if damaged) the resilience is rewarded
     HEALTH = 0          # DO NOT USE, it give bad training results # When system is still healthy an extra reward is given
-    SAVE_BULLETS = 10   # Reward when the agent should not move (do-nothing action) because nothing to defend yet
-    VALID_DEFENSE = 20  # Reward for a given weapon when the environment was at a certain state (higher than penalty)
+    SAVE_BULLETS = 50   # Reward when the agent should not move (do-nothing action) because nothing to defend yet
+    VALID_DEFENSE = 50  # Reward for a given weapon when the environment was at a certain state (higher than penalty)
     # BLANK = 10
+
+# class REWARD(Enum):
+#     '''This is finer, but it requires more steps to fine-tune'''
+#     WIN = 100           # Some defenses have blocked all the attacks, end with FULL success.
+#     SURVIVE = 0         # After a while, if the system is still UP, end with success (is resilient)
+#     DIE = -100          # The attack destroys successfully the system
+#     USE_DEFENSE = -10   # The less weapons spent in defense, the better
+#     TIME = 0            # While still alive (even if damaged) the resilience is rewarded
+#     HEALTH = 0          # DO NOT USE, it give bad training results # When system is still healthy an extra reward is given
+#     SAVE_BULLETS = 10   # Reward when the agent should not move (do-nothing action) because nothing to defend yet
+#     VALID_DEFENSE = 10  # Reward for a given weapon when the environment was at a certain state (higher than penalty)
+#     # BLANK = 10
 
 
 class SecurityEnvironment(gym.Env):
@@ -117,6 +130,10 @@ class SecurityEnvironment(gym.Env):
         was_damaged = self._is_damaged(self._last_observation)
         is_damaged = self._is_damaged(observation)
 
+        # Note: I keep this trace because it is useful when do-nothing is not well trained to see how many times was really in the training batch
+        # if not action_expensive and np.subtract(self._last_observation, [0, 0, 0]).sum() == 0 and np.subtract(observation, [1, 0, 0]).sum() == 0:
+        #     print('EEE')
+
         #  Reward no-action in normal state, penalty if no-action when damaged or if the action is expensive
         self._update_reward(REWARD.SAVE_BULLETS) if not action_expensive and not was_damaged else self._update_reward(
             REWARD.USE_DEFENSE)
@@ -157,8 +174,10 @@ class SecurityEnvironment(gym.Env):
     def close(self):
         return None
 
-    def _normalize_info(self, info):
-        return {'info': f'{info}'}
+    def _normalize_info(self, info, truncated=False):
+        # SB3 could not handle truncate unless this is send (but this is maybe obsolete because it has no effect)
+        return {'info': f'{info}', 'TimeLimit.truncated': truncated}
+        # return {'info': f'{info}'}
 
     def execute(self, action):
         '''
@@ -197,7 +216,7 @@ class SecurityEnvironment(gym.Env):
         print2(f'{str(self._steps).ljust(2)}:', self._last_observation, f'A{str(action).ljust(2)}', observation,
                f'R{str(reward).ljust(4)}', self.action_desc(action), info)
         self._last_observation = observation.copy()
-        return observation, reward, terminated, truncated, self._normalize_info(info)
+        return observation, reward, terminated, truncated, self._normalize_info(info, truncated)
 
     def _update_reward(self, reward_type, times=1):
         self._reward = self._reward + (reward_type.value) * times

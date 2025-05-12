@@ -47,4 +47,4 @@ while True:
     sleep(10)
     actions, _states = model.predict(observations, deterministic=False)
     print(f'AIADAPT RL agent: based on observations {observations[0]}, recommend executing action {actions[0]}')
-    observations = np.array([securityEnvironment.execute(0)])
+    observations = np.array([securityEnvironment.execute(actions[0])])
