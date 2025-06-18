@@ -6,10 +6,10 @@ from security_environment import SecurityEnvironment
 from stable_baselines3.common.callbacks import CheckpointCallback
 
 TARGET = 'PPC'  # TARGET IMPORTANT !!! (3 characters)
-SIMULATE = True
+SIMULATE = False
 
-MAX_TRAINING_STEPS = 512
-TRAIN_SLOT = 256  # in real envs we have low steps, we can afford bigger minibatches
+MAX_TRAINING_STEPS = 1024
+TRAIN_SLOT = 64  # in real envs we have low steps, we can afford bigger minibatches
 MODEL = f'{TARGET}, DQN {MAX_TRAINING_STEPS} steps, slot {TRAIN_SLOT}, SB3,{datetime.now().strftime("%Y%m%d_%H%M%S")}'
 MODEL_FILE = MODEL.replace(',', '_').replace(' ', '_')
 

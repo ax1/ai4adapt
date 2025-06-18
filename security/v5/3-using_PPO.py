@@ -53,7 +53,7 @@ def train():
 
     # Train with ideal PPO params but ignore critic actor because with that low learning rate we know we need much more iterations to give good critic
     model = PPO("MlpPolicy", securityEnvironment,
-                verbose=1, n_epochs=50, n_steps=TRAIN_SLOT, batch_size=TRAIN_SLOT, learning_rate=0.001, vf_coef=0)
+                verbose=1, n_epochs=50, n_steps=TRAIN_SLOT, batch_size=TRAIN_SLOT, learning_rate=0.001, vf_coef=0)  # vf_coef 0.5 also fine but still value loss at the end
 
     # Train using both actor and critic but increase LR so the dqn part of the algorithm will behave better despite the actor not optimal
     # Note in this case we need more iterations, at least 1024, to compensate actor degradation.Anyway for higher iterations both agents keep fighting so it is not ideal

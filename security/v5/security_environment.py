@@ -30,11 +30,11 @@ class REWARD(Enum):
     WIN = 100           # Some defenses have blocked all the attacks, end with FULL success.
     SURVIVE = 0         # After a while, if the system is still UP, end with success (is resilient)
     DIE = -100          # The attack destroys successfully the system
-    USE_DEFENSE = -50   # The less weapons spent in defense, the better
+    USE_DEFENSE = -10   # The less weapons spent in defense, the better
     TIME = 0            # While still alive (even if damaged) the resilience is rewarded
     HEALTH = 0          # DO NOT USE, it give bad training results # When system is still healthy an extra reward is given
-    SAVE_BULLETS = 50   # Reward when the agent should not move (do-nothing action) because nothing to defend yet
-    VALID_DEFENSE = 50  # Reward for a given weapon when the environment was at a certain state (higher than penalty)
+    SAVE_BULLETS = 10   # Reward when the agent should not move (do-nothing action) because nothing to defend yet
+    VALID_DEFENSE = 10  # Reward for a given weapon when the environment was at a certain state (higher than penalty)
     # BLANK = 10
 
 # class REWARD(Enum):
