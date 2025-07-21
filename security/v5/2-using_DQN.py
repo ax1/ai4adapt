@@ -36,11 +36,10 @@ def train():
     # SO now we have a lot of EEE as we wanted
     # exploration_final_eps: to keep exploring. It cannot be high otherwise it does not give the ones with terminal state as best
     # model = DQN("MlpPolicy", securityEnvironment, verbose=1)
-    model = DQN("MlpPolicy", securityEnvironment, verbose=1, learning_rate=0.01, gradient_steps=50)
-    # model = DQN("MlpPolicy", securityEnvironment, verbose=1, learning_rate=0.01, gradient_steps=50, exploration_initial_eps=1.0, exploration_final_eps=0.1, gamma=0.99, batch_size=TRAIN_SLOT)  # low expl increase continuous random (help to exec do-nothings but also reduce good trajectories)
+    model = DQN("MlpPolicy", securityEnvironment, verbose=1, learning_rate=0.01, gradient_steps=15)
+    # model = DQN("MlpPolicy", securityEnvironment, verbose=1, learning_rate=0.01, gradient_steps=15, exploration_initial_eps=1.0, exploration_final_eps=0.1, gamma=0.99, batch_size=TRAIN_SLOT)  # low expl increase continuous random (help to exec do-nothings but also reduce good trajectories)
     # model = DQN("MlpPolicy", securityEnvironment, verbose=1, learning_rate=0.001, target_update_interval=100, batch_size=TRAIN_SLOT)
-    # model = DQN("MlpPolicy", securityEnvironment, verbose=1,
-    #             batch_size=TRAIN_SLOT, gamma=0.99, exploration_fraction=0.005)  # final eps to force explore
+    # model = DQN("MlpPolicy", securityEnvironment, verbose=1, batch_size=TRAIN_SLOT, gamma=0.99, exploration_fraction=0.005)  # final eps to force explore
     print(model.__dict__)
     model.learn(total_timesteps=MAX_TRAINING_STEPS, progress_bar=False, callback=save_callback)
     return model
