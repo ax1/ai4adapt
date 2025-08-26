@@ -2,29 +2,47 @@
 
 Reinforcement Learning (RL) for security defences optimization.
 
+The aim of this project is to use popular RL tools, like [Gymnasium](https://gymnasium.farama.org/) for environment simulations and [Stable Baselines3 (SB3)](https://stable-baselines3.readthedocs.io), for Deep Learning training and use real environments instead of simulators or digital twins to perform the training. The agents created with this method are more reliable to handle security issues when deployed into production. Highlights:
+- A Gym-like custom environment for security activities is provided, so people with knowledge of RL frameworks can use it with little extra knowledge. 
+- The environment is prepared to connect to real digital systems where a cybersecurity expert and a devops engineer may be required depending on the complexity of the security problem.
+
 ## Installation
 
-> DEV status: check inside example files depending on the wanted lib for more installation instructions.
+> DEV status: check inside example files depending on the wanted lib for custom installation instructions.
 
 ```sh
+
+# Clone repo
+git clone https://github.com/ax1/ai4adapt
+cd ai4adapt
+
 # Optional, create a virtual env
 python -m venv .venv
 source ./.venv/bin/activate
 
+#---------- a) complete installation -----
 # aiohttp only required to use security_env_proxy. For Python 3.10+ asiyncio is built-in 
-# gymnasium[box2d] is optional (install only box2d to use the sample envs), if so, swig is also required
+# gymnasium[box2d] is optional (install only box2d to use the gym sample envs), if so, swig is also required
 pip install swig gymnasium[box2d] aiohttp stable-baselines3[extra]
-# Use this instead when planning to run in a headless server (no GUI, so swig+box2d will still fail)
-# pip install gymnasium aiohttp stable-baselines3[extra] 
+
+#---------- b) minimal installation ------
+# Use this instead when planning to run in a headless server, or just the security environment (in server there is no GUI, so installing swig+box2d will fail)
+pip install gymnasium aiohttp stable-baselines3[extra]
+
+#---------- c) contributors and maintainers ------
+# Use the requirements.txt file to use the same version of libraries
+pip install -r requirements.txt
+
 ```
 
 ## Usage
 
 > See README.md in each folder
 
-- Security folder: SecurityEnvironment.py created as a gym env. Examples on how to use it.
-- Lunar folder: minimal examples on how to use gym environments (no RL).
-- Bar2D folder: another set of examples, mainly for assessing the DRL libs on a simple env. 
+- security folder: SecurityEnvironment.py created as a gym env. Examples on how to use it. Also a dummy environment proxy is available to run before the real environment is available.
+- examples/Lunar folder: minimal examples on how to use gym environments (no RL,RL, DRL).
+- examples/Bar2D folder: another set of examples, mainly for assessing the DRL libs on a simple env. 
+- examples/simple folder: collection of custom crafted environments resolving different security problems in a generic way. Pre-tuning the hyperparameters for the security environment is usually faster using these environments. Additionally, they provide insights on how the agent is learning and the minimum length of iterations that will be required later (running things targeting real machines will be always slower than iterating with these environments).
 
 ```sh
 from security_environment import SecurityEnvironment
@@ -39,12 +57,37 @@ env = gym.make(ENV_NAME)
 
 ```
 
-Read also https://xusophia.github.io/DataSciFinalProj/
+> Note: the "default" project setup runs the environment by using a dummy simulator. In case the environment proxy (ai4adapt_env) is already available, just toggle the flag `SIMULATE` to `false`.
 
-## Approach (12/09/2023)
+## Reward strategy
 
-After assessing pros and cons, we have decided to split the project into 2 objectives:
-- The RL training for security: keep it simple, do not try to re-invent the wheel. There are many literature on RL for security. So we separate the training from the environment as much as possible. This is achieved by the SecurityEnvironment module.
-- The environment: Create a real environment with real initial attack scenario and with real sensing and REAL defenses. Pass the sensing to the training part as gymnasium env and simple/clear observations and rewards. Even if the RL does not create the optimal strategy, having a real system gives more confidence in the training than using a simulator.
+The behaviour of the trained agent will be heavily influenced by the set of rewards to be configured in the `security_environment.py` file. By default, choosing the right defense at a given state provides good reward, but learning to wait idle (do-nothing) when the attack has not been detected yet is important. Also, there is a high reward when the agent stops any further evolution of the attack, thus promoting the agent to find first how to stop the attack and then tune the less costly way to stop it.
 
-Additionally: to limit the scope we will train only *reactive* defenses (not the preventive ones). In the future we can put also preventive defenses to the trained ones so the system will be more robust and not only able to solve the attacks on the fly.
+## Training report files
+
+The `security_environment.py` is already prepared to generate a documentation with the training setup and the result of the execution. Run any agent and pass the standard output to a file.
+That information is provided in structured format (for parsers) but also in human readable format to understand how the agent was evolving from random execution to refined defensive strategies. 
+
+## Creation of the real environment proxy
+
+We have developed another project, that is currently in managed private repository [AI4ADAPT_env](https://github.com/ax1/ai4adapt_env) with proprietary license, but creating a proxy is straightforward by implementing a REST service with the following endpoints:
+- GET ${url} : equivalent to Gymnasium init(). Return initialization information (the list of actions, the observation space)
+- DELETE ${url}: equivalent to Gymnasium reset(). Delete any old state in the server, or reboot machines, and return initial info message to the agent.
+- POST ${url} : equivalent to Gymnasium step(). Receive the action id (defense), to execute in the real system and return the observations after the execution.
+
+## Resources
+
+AI4ADAPT has been created during the execution of the UE project [AI4CYBER](https://ai4cyber.eu/). There are many useful resources and documentation available:
+- [AI4ADAPT research paper](https://doi.org/10.1016/j.eswa.2025.129168)
+- [AI4CYBER website and documentation](https://ai4cyber.eu/?page_id=62)
+- [AI4CYBER at Cordis](https://cordis.europa.eu/project/id/101070450)
+
+## Contact
+[AI4CYBER contact page](https://ai4cyber.eu/?page_id=219/#contact)
+
+
+## Acknowledgements
+
+|<img src="https://ai4cyber.eu/wp-content/uploads/2022/12/Funded-Europe.png" alt="Funded by Europe" width="200"/>|This work has received funding from the European Union’s Horizon Europe research and innovation programme under grant agreement No 101070450 (AI4CYBER).|
+|---|---|
+
