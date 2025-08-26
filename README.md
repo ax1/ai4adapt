@@ -6,6 +6,8 @@ The aim of this project is to use popular RL tools, like [Gymnasium](https://gym
 - A Gym-like custom environment for security activities is provided, so people with knowledge of RL frameworks can use it with little extra knowledge. 
 - The environment is prepared to connect to real digital systems where a cybersecurity expert and a devops engineer may be required depending on the complexity of the security problem.
 
+The project has been tested to successfully defend against Advanced Persistent Threats (APTs), where an attacker silently takes control of a vulnerable machine in the system and then attempts to escalate access to other machines with higher privileges. Once the attacker reaches the final target (typically a server), they could steal information, impersonate members of the organization, or encrypt the server and demand ransom.
+
 ## Installation
 
 > DEV status: check inside example files depending on the wanted lib for custom installation instructions.
@@ -83,6 +85,7 @@ AI4ADAPT has been created during the execution of the UE project [AI4CYBER](http
 - [AI4CYBER at Cordis](https://cordis.europa.eu/project/id/101070450)
 
 ## Contact
+
 [AI4CYBER contact page](https://ai4cyber.eu/?page_id=219/#contact)
 
 
