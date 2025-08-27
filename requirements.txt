@@ -13,7 +13,7 @@ contourpy==1.1.1
 cycler==0.12.1
 Farama-Notifications==0.0.4
 filelock==3.16.1
-fonttools==4.56.0
+fonttools==4.59.1
 frozenlist==1.5.0
 fsspec==2025.2.0
 google-auth==2.38.0
