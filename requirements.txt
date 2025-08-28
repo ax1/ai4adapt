@@ -6,7 +6,7 @@ ale-py==0.10.1
 async-timeout==5.0.1
 attrs==25.1.0
 cachetools==5.5.2
-certifi==2025.1.31
+certifi==2025.8.3
 charset-normalizer==3.4.1
 cloudpickle==3.1.1
 contourpy==1.3.0
