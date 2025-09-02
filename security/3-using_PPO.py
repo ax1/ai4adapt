@@ -15,7 +15,7 @@ MODEL_FILE = MODEL.replace(',', '_').replace(' ', '_')
 
 def train():
 
-    # Lookout: PPO default block steps aways forced to 2048 blocks, override with n_steps
+    # Lookout: PPO default block steps is library-set to 2048 blocks, override with n_steps
     # model = PPO("MlpPolicy", SecurityEnvironment(), verbose=1, learning_rate=0.1, gamma=0.01)
     '''
     ON TRAINING PAY ATTENTION to ep_rew_mean at rollout info (eg: our success is 100 less 1 defense so anywhere near 87-90 is good training)

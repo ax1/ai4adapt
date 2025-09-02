@@ -10,6 +10,13 @@ The project has been tested to successfully defend against Advanced Persistent T
 
 ## Installation
 
+For casual users there is an available docker image, installing the dependencies and executing a training.
+
+```sh
+docker build -t ai4adapt .
+docker run --rm --name ai4adapt ai4adapt
+```
+
 > DEV status: check inside example files depending on the wanted lib for custom installation instructions.
 
 ```sh
@@ -64,6 +71,12 @@ env = gym.make(ENV_NAME)
 ## Reward strategy
 
 The behaviour of the trained agent will be heavily influenced by the set of rewards to be configured in the `security_environment.py` file. By default, choosing the right defense at a given state provides good reward, but learning to wait idle (do-nothing) when the attack has not been detected yet is important. Also, there is a high reward when the agent stops any further evolution of the attack, thus promoting the agent to find first how to stop the attack and then tune the less costly way to stop it.
+
+## Observation and Action spaces
+
+> Read the documentation in the links below for detailed information.
+- Observation: [machine 1, machine 2, machine 3] where 0 = no attack detected yet, 1 = some kind of intrusion attempt on the machine, 2 = attacker has taken control of the machine, 3 = ai4adapt stopped the attacker activities in the machine.
+- Action: [0,1,2,3...n] where each action corresponds to a given defense execution in one of the machines. 0 = do-nothing on machine 1, 7 = shutdown machine 1, 20 = shutdown machine 2.
 
 ## Training report files
 
