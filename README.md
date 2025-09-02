@@ -1,6 +1,12 @@
-# AI4ADAPT
+<div style="display: flex; align-items: center; justify-content: space-between;">
+     <img src="logo_sm.jpg" alt="Logo" style="height: 150px"/>
+    <div>
+      <h1>AI4ADAPT</h1>
+        <strong>Reinforcement Learning (RL) for security defences optimization</strong>
+    </div>
 
-Reinforcement Learning (RL) for security defences optimization.
+</div>
+<br>
 
 The aim of this project is to use popular RL tools, like [Gymnasium](https://gymnasium.farama.org/) for environment simulations and [Stable Baselines3 (SB3)](https://stable-baselines3.readthedocs.io), for Deep Learning training and use real environments instead of simulators or digital twins to perform the training. The agents created with this method are more reliable to handle security issues when deployed into production. Highlights:
 - A Gym-like custom environment for security activities is provided, so people with knowledge of RL frameworks can use it with little extra knowledge. 
@@ -10,7 +16,7 @@ The project has been tested to successfully defend against Advanced Persistent T
 
 ## Installation
 
-For casual users there is an available docker image, installing the dependencies and executing a training.
+For occasional users there is an available docker image, installing the dependencies and executing a training.
 
 ```sh
 docker build -t ai4adapt .
