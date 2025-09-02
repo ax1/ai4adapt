@@ -1,10 +1,7 @@
-<div style="display: flex; align-items: center; justify-content: space-between;">
-     <img src="logo_sm.jpg" alt="Logo" style="height: 150px"/>
-    <div>
-      <h1>AI4ADAPT</h1>
-        <strong>Reinforcement Learning (RL) for security defences optimization</strong>
-    </div>
-
+<div align="center">
+      <img src="logo_sm.jpg" alt="Logo" style="height: 200px"/> 
+           <h1>AI4ADAPT </h1>
+     <h3>Reinforcement Learning (RL) for security defences optimization</h3>
 </div>
 <br>
 
